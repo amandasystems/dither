@@ -9,6 +9,7 @@ pub struct Img<P> {
 }
 
 impl<P> Img<P> {
+    /// map a function on P across the image buffer, converting an `Img<P>` to an `Img<Q>`
     pub fn convert_with<Q>(self, convert: impl Fn(P) -> Q) -> Img<Q> {
         let Img { buf, width } = self;
         Img {
@@ -27,9 +28,12 @@ impl<P> Img<P> {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
+
+    /// Returns a reference to an element.
     pub fn get(&self, (x, y): (u32, u32)) -> Option<&P> {
         self.buf.get(self.idx((x, y)))
     }
+    /// Returns a pair `(width, height)`.
     pub fn size(&self) -> (u32, u32) {
         (self.width, self.len() as u32 / self.width as u32)
     }
@@ -47,6 +51,7 @@ impl<N: From<u8>> Img<RGB<N>> {
 }
 
 impl Img<RGB<u8>> {
+    /// save an image as a `.png` or `.jpg` to the path. the path extension determines the image type
     pub fn save<P: AsRef<Path>>(self, path: P) -> Result<()> {
         let height = self.buf.len() as u32 / self.width;
         let buf = image::RgbImage::from_raw(self.width, height, self.raw_buf()).unwrap();

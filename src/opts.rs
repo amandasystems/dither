@@ -17,25 +17,32 @@ pub struct Opt {
     pub input: PathBuf,
 
     /// Color depth. Must be between 1 and 8.
-    #[structopt(short = "b", long = "bit_depth", default_value = "1")]
+    #[structopt(long = "depth", default_value = "1")]
     pub bit_depth: u8,
 
     /// Output file: will be written to as a .png or .jpg (inferred from file extension) If left empty,
     /// it will be saved to a .png with the follwing information:
-    /// $BASE_dithered_$DITHER_$COLOR_$DEPTH
-    /// `$dither bunny.png -c --dither=atkinson --bit-depth=2` will save to bunny_atkinson_c_2.png
+    /// "{base}_dithered_{dither}_{color}_{depth}.png"
+    /// `$dither bunny.png --color=color --dither=atkinson --depth=2` will save to bunny_atkinson_c_2.png
     #[structopt(name = "output", parse(from_os_str))]
     output: Option<PathBuf>,
 
     /// Ditherering algorithm to use. Options are
-    /// "floyd", "atkinson", "stucki", "burkes","jarvis"
+    /// "floyd", "atkinson", "stucki", "burkes","jarvis", "sierra3"
     #[structopt(short = "d", long = "dither", default_value = "floyd")]
     pub ditherer: super::Ditherer,
 
-    ///Color mode to use.
-    /// Options are "color", (all colors with specified bit depth)
-    /// ("bw" [default], "green", "cyan") -> one-bit in specified color. bit depth must equal 1.
-    /// ("0xZZZZZZ 0xZZZZZZZ") -> user specified 1bit user color palette; where the first is foreground in hexidecimal and the second is background. bit depth must equal 1.
+    /// Color mode to use.
+    /// Options are "color", "bw", "cga", $SINGLE_COLOR, "$FRONT_PALETTE $BACKPALETTE";
+    /// (all colors with specified bit depth)
+    /// "bw" -> black and white mode (grayscale in higher birt depths)
+    /// $COLOR => single-color mode. options are
+    ///     ["BLUE", "GREEN", "CYAN",
+    ///     "RED", "MAGENTA", "BROWN",
+    ///     "LIGHT_GRAY", "GRAY", "LIGHT_BLUE",
+    /// "LIGHT_GREEN", "LIGHT_CYAN", "LIGHT_RED"
+    /// "LIGHT_MAGENTA", "YELLOW", "WHITE"
+    /// ("0xZZZZZZ 0xZZZZZZZ") -> user specified 1bit user color palette; where the first is foreground in hexidecimal and the second is background.
     /// "cga" -> sixteen-color CGA. ignores bit depth; casues error on bit depth > 1
     #[structopt(short = "c", long = "color", default_value = "bw")]
     pub color_mode: super::color::Mode,

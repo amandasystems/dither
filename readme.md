@@ -13,28 +13,63 @@ dither --help
 ## usage
 
 ```bash
-dither INPUT [OUTPUT] [-c] [-v] [--ditherer] [--bit_depth]
+dither INPUT [OUTPUT] [-v] [--ditherer] [--color] [--bit_depth]
 ```
 
 example:
 
 ```bash
-dither example.png color_atkinson_01.png -c -v
+dither bunny.png green_bunny.png --dither=atkinson --color=GREEN --depth=2 -v
 ```
 
 ## args
 
 ### `INPUT`
 
-the path to a PNG
+the path to an input image. known good image formats are `.png` and `.jpg`.
 
 ### `OUTPUT`
 
-the path to write the output. this will create or truncate the file at the existing location, if necessary
+the path to write the output. this will create or truncate the file at the existing location, if necessary. the image type will be inferred from the filename. currently, only `.png` and `.jpg` are supported.
 
-### `'-c'`, `--color`
+### `-c`, `--color`
 
-Whether to dither in black and white (default) or color.
+The color mode to use. Default is "bw" (black and white). Color mode to use.
+
+#### "color"
+
+(all colors with specified bit depth)
+
+##### "bw"
+
+black and white mode (grayscale in higher birt depths)
+
+#### $COLOR
+
+single-color mode. options are
+
+- BLUE
+- GREEN
+- CYAN
+- RED
+- MAGENTA
+- BROWN
+- LIGHT_GRAY
+- GRAY
+- LIGHT_BLUE
+- LIGHT_GREEN
+- LIGHT_CYAN "LIGHT_RED"
+- LIGHT_MAGENTA
+- YELLOW
+- WHITE
+
+#### "$FRONT $BACK"
+
+user specified 1bit user color palette, where the first is foreground in hexidecimal and the second is background. eg, "0xaabbcc 0x000000"
+
+#### cga
+
+sixteen-color CGA. ignores bit depth; casues error on bit depth > 1
 
 ### `-d, --dither`
 
@@ -45,11 +80,12 @@ The type of ditherer to use. Available options are
 - `"stucki"`,
 - `"burkes"`,
 - `"jarvis"`, `"judice"`, `ninke"` _Jarvis-Judice-Ninke dithering_
+- `"sierra"`, `"sierra3"` _Sierra_ dithering
 
 ### `-v, --verbose`
 
 Verbose debug output
 
-### `--bit-depth`
+### `--depth`
 
-Default 1\. Bit depth should be an unsigned integer between 1 and 7\. The number of bits to compress each channel to. Default is 1 (black and white dithering or eight-color).
+Default 1\. Bit depth should be an unsigned integer between 1 and 7\. The number of bits to compress each channel to.

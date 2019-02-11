@@ -33,11 +33,13 @@ impl Mode {
 impl std::fmt::Display for Mode {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Mode::Color => write!(f, "mode_color"),
-            Mode::CGA => write!(f, "mode_cga"),
-            Mode::SingleColor(color) => write!(f, "mode_1bit_{}", color),
-            Mode::BlackAndWhite => write!(f, "mode_bw"),
-            Mode::CustomPalette { front, back } => write!(f, "mode_{:x}_{:x}", front, back),
+            Mode::Color => write!(f, "color"),
+            Mode::CGA => write!(f, "cga"),
+            Mode::SingleColor(color) => write!(f, "single_color_{}", color),
+            Mode::BlackAndWhite => write!(f, "bw"),
+            Mode::CustomPalette { front, back } => {
+                write!(f, "custom_palette_{:x}_{:x}", front, back)
+            }
         }
     }
 }

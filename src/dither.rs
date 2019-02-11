@@ -33,7 +33,7 @@
 use super::Img;
 use std::ops::{Add, Div, Mul};
 
-/// A type of Dither. Available dithers are [Stucki], [Atkinson], [FloydSteinberg], [Burkes]
+/// A type of Dither. Available dithers are [Stucki], [Atkinson], [FloydSteinberg], [Burkes], [JarvisJudiceNinke], [Sierra3]
 pub trait Dither {
     const DIV: f64;
     const OFFSETS: &'static [(isize, isize, f64)];
@@ -117,6 +117,10 @@ pub struct Burkes;
 ///        (1/48)
 pub struct JarvisJudiceNinke;
 
+///          X   5   3
+///      2   4   5   4   2
+///          2   3   2
+///        (1/32)
 pub struct Sierra3;
 
 #[derive(Debug)]

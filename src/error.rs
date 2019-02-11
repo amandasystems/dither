@@ -1,4 +1,5 @@
 #[derive(Debug)]
+/// Error types for [super::main]
 pub enum Error {
     IO(std::io::Error),
     Image(image::ImageError),
@@ -7,6 +8,7 @@ pub enum Error {
     IncompatibleOptions,
 }
 
+/// Result type for [super::main]
 pub type Result<T> = std::result::Result<T, Error>;
 
 impl std::fmt::Display for Error {
