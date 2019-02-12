@@ -1,3 +1,4 @@
+use crate::prelude::*;
 use std::path::PathBuf;
 use structopt::StructOpt;
 #[derive(Debug, StructOpt, PartialEq, Clone)]
@@ -28,7 +29,7 @@ pub struct Opt {
     /// Ditherering algorithm to use. Options are
     /// "floyd", "atkinson", "stucki", "burkes","jarvis", "sierra3"
     #[structopt(short = "d", long = "dither", default_value = "floyd")]
-    pub ditherer: super::Ditherer,
+    pub ditherer: Ditherer<'static>,
 
     /// Color mode to use.
     /// Options are "color", "bw", "cga", $SINGLE_COLOR, "$FRONT_PALETTE $BACKPALETTE";
@@ -43,7 +44,7 @@ pub struct Opt {
     /// ("0xZZZZZZ 0xZZZZZZZ") -> user specified 1bit user color palette; where the first is foreground in hexidecimal and the second is background.
     /// "cga" -> sixteen-color CGA. ignores bit depth; casues error on bit depth > 1
     #[structopt(short = "c", long = "color", default_value = "bw")]
-    pub color_mode: super::color::Mode,
+    pub color_mode: color::Mode,
 }
 
 impl Opt {

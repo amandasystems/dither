@@ -1,6 +1,5 @@
-use super::prelude::*;
+use crate::prelude::*;
 use rand::prelude::*;
-use std::path::PathBuf;
 
 #[test]
 fn test_save_and_load() {
@@ -21,14 +20,11 @@ fn load_test_image() -> Img<RGB<u8>> {
     Img::load(input).unwrap()
 }
 /// No Op ditherer; doesn't do anything;
-struct NoOpDither;
 
-impl Dither for NoOpDither {
-    const DIV: f64 = 1.;
-    const OFFSETS: &'static [(isize, isize, f64)] = &[];
-}
 #[test]
 fn test_dither_no_op() {
+    const NO_OP_DITHER: Ditherer = Ditherer::new(1., &[]);
+
     fn no_op(p: RGB<f64>) -> (RGB<f64>, RGB<f64>) {
         (p, RGB::default())
     }
@@ -39,11 +35,12 @@ fn test_dither_no_op() {
         }
     }
     let img = Img::new(test_img_buf, 3).unwrap();
-    assert_eq!(img, NoOpDither::dither(img.clone(), no_op));
+    assert_eq!(img, NO_OP_DITHER.dither(img.clone(), no_op));
 }
 
 #[test]
 fn test_quantize() {
+    const TOL: f64 = std::f64::EPSILON;
     let uniform = rand::distributions::Uniform::from((0.)..(255.));
     let mut rng = rand::thread_rng();
     let mut q = create_quantize_n_bits_func(1).unwrap();
@@ -51,12 +48,7 @@ fn test_quantize() {
         let n = uniform.sample(&mut rng);
         let (want_q, want_r) = quantize_1_bit(n);
         let (got_q, got_r) = q(n);
-        if (got_q - want_q).abs() > std::f64::EPSILON
-            || (got_r - want_r).abs() > 1. + std::f64::EPSILON
-        {
-            dbg!((n, want_q, want_r, got_q, got_r));
-            panic!();
-        }
+        assert!((got_q - want_q).abs() < TOL && (got_r - want_r).abs() < 1. + TOL);
     }
 }
 
