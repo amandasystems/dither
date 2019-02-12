@@ -1,12 +1,12 @@
 [package]
 name = "dither"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Efron Licht <efron.python@gmail.com>"]
 edition = "2018"
 license = "MIT"
 description = "A ditherer for PNG images"
 repository= "https://gitlab.com/efronlicht/dither"
-
+readme = "readme.md"
 [dependencies]
 structopt = "0.2"
 image = "0.21.0"
