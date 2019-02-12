@@ -1,5 +1,6 @@
 use super::RGB;
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
+/// CGA is a 16-color palette developed by IBM and used in early computing.
 pub enum CGA {
     Black = 0,
     Blue = 1,
@@ -40,13 +41,14 @@ pub mod hex {
 }
 impl CGA {
     /// quantize a RGB triplet to the closest CGA color and error.
-    /// this is a somewhat naive/ inefficient implementation; i'm sure I can do better.
 
     pub fn quantize(RGB(r0, g0, b0): RGB<f64>) -> (RGB<f64>, RGB<f64>) {
         let mut min_abs_err = std::f64::INFINITY;
         let mut closest = RGB::default();
         let mut min_err = RGB::default();
 
+        // dev note: just iterating through all sixteen colors is a pretty naive approach. I think algorithimically there's a better way,
+        // but since there's only sixteen posibilities iterating through is very fast.
         for RGB(r1, g1, b1) in CGA::COLORS.iter().cloned().map(RGB::<f64>::from) {
             let abs_err = f64::abs(r0 - r1) + f64::abs(g0 - g1) + f64::abs(b0 - b1);
             if abs_err < min_abs_err {

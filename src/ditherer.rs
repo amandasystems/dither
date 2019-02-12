@@ -21,6 +21,7 @@ impl<'a> Ditherer<'a> {
     }
 }
 
+/// The Dither trait quantizes an image to a limited color palette, storing the air and spreading it across the image.
 pub trait Dither<P> {
     fn dither(&self, img: Img<P>, quantize: impl FnMut(P) -> (P, P)) -> Img<P>;
 }
@@ -35,19 +36,25 @@ where
     /// but adds to ITSELF
     ///
     fn dither(&self, mut img: Img<P>, mut quantize: impl FnMut(P) -> (P, P)) -> super::Img<P> {
-        let width = img.width() as isize;
-        let mut spillover = vec![P::default(); img.len()];
-        for (i, p) in img.iter_mut().enumerate() {
-            let (quantized, spill) = quantize(p.clone() + spillover[i].clone());
-            *p = quantized;
+        let (width, height) = img.size();
+        let mut spillover = Img::new(vec![P::default(); img.len()], width).unwrap();
 
-            // add spillover matrices
-            for (dx, dy, mul) in self.offsets.iter().cloned() {
-                let j = i as isize + (dy * width) + dx;
+        for y in 0..height {
+            for dx in 0..width {
+                // we reverse the x-direction of the dithering every row to reduce banding
+                let x = if y % 2 == 0 { dx } else { width - dx - 1 };
+                let (quantized, spill) = quantize(img[(x, y)].clone() + spillover[(x, y)].clone());
+                img[(x, y)] = quantized;
 
-                if let Some(stored_spill) = spillover.get_mut(j as usize) {
-                    // this cast is OK, since if we go past the edges, we get zero
-                    *stored_spill = stored_spill.clone() + (spill.clone() * mul) / self.div;
+                // add spillover matrices
+                for (dx, dy, mul) in self.offsets.iter().cloned() {
+                    let xj = dx + x as isize;
+                    let yj = dy + y as isize;
+
+                    if let Some(stored_spill) = spillover.get_mut((xj as u32, yj as u32)) {
+                        // this cast is OK, since if we go past the edges, we get zero
+                        *stored_spill = stored_spill.clone() + (spill.clone() * mul) / self.div;
+                    }
                 }
             }
         }

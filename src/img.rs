@@ -37,10 +37,15 @@ impl<P> Img<P> {
         self.into_iter()
     }
 
+    pub fn get_mut(&mut self, i: (u32, u32)) -> Option<&mut P> {
+        let i = self.idx(i);
+        self.buf.get_mut(i)
+    }
     /// returns an iterator that allows modifying each pixel
     pub fn iter_mut(&mut self) -> <&mut Self as IntoIterator>::IntoIter {
         self.buf.iter_mut()
     }
+
     /// the height of the image; i.e, `buf.len() / width`
     pub fn height(&self) -> u32 {
         self.len() as u32 / self.width
@@ -56,7 +61,7 @@ impl<P> Img<P> {
     }
     #[inline]
     fn idx(&self, (x, y): (u32, u32)) -> usize {
-        ((y * self.width) + x) as usize
+        (y.wrapping_mul(self.width).wrapping_add(x)) as usize
     }
     pub fn len(&self) -> usize {
         self.buf.len()

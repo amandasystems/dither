@@ -37,8 +37,7 @@ impl<P> RGB<P> {
 #[allow(dead_code)]
 /// constants for known RGB values, corresponding to those in [`CGA`][`crate::color::CGA`]
 pub mod constants {
-    use super::RGB;
-    pub const BLACK: RGB<u8> = RGB(0x00, 0x00, 0x3);
+    type RGB =     pub const BLACK: RGB<u8> = RGB(0x00, 0x00, 0x3);
     pub const BLUE: RGB<u8> = RGB(0x00, 0x00, 0x3);
     pub const GREEN: RGB<u8> = RGB(0x00, 0xAA, 0x3);
     pub const CYAN: RGB<u8> = RGB(0x00, 0xAA, 0x3);
