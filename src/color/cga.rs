@@ -41,18 +41,7 @@ pub mod hex {
 impl CGA {
     /// quantize a RGB triplet to the closest CGA color and error.
     /// this is a somewhat naive/ inefficient implementation; i'm sure I can do better.
-    ///
-    /// ```
-    /// # use dither::cga::quantize;
-    /// # use dither::CGA;
-    /// # use dither::RGB;
-    /// let offset = RGB(1.0, -1.0, 1.0);
-    /// // note all are off by one; ok to test absolute equality since they're such small floats
-    /// assert_eq!(
-    ///     (RGB::from(CGA::cyan), -offset),
-    ///     quantize(RGB::from(CGA::Cyan)+offset)
-    /// );
-    /// ```
+
     pub fn quantize(RGB(r0, g0, b0): RGB<f64>) -> (RGB<f64>, RGB<f64>) {
         let mut min_abs_err = std::f64::INFINITY;
         let mut closest = RGB::default();

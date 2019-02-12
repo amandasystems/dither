@@ -4,12 +4,49 @@ use std::path::Path;
 /// A rectangular image on N pixels.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Img<P> {
-    pub buf: Vec<P>,
-    pub width: u32,
+    buf: Vec<P>,
+    width: u32,
 }
 
 impl<P> Img<P> {
+    /// create an Img<P> from a buf and width. fails if buf.len() is not an exact multiple of width.
+    pub fn new(buf: impl IntoIterator<Item = P>, width: u32) -> Option<Self> {
+        let buf: Vec<P> = buf.into_iter().collect();
+        if width == 0 || buf.len() % width as usize != 0 {
+            None
+        } else {
+            Some(Img { buf, width })
+        }
+    }
+    /// create an Img<P> from a buf and length directly, skipping the bounds check.
+    pub const unsafe fn from_raw_buf(buf: Vec<P>, width: u32) -> Self {
+        Img { buf, width }
+    }
+
+    /// pull the buffer out of the image as a vec
+    pub fn into_vec(self) -> Vec<P> {
+        self.buf
+    }
+
+    /// get the width of the image
+    pub fn width(&self) -> u32 {
+        self.width
+    }
+    /// returns an iterator over the pixels in the buffer
+    pub fn iter(&self) -> <&Self as IntoIterator>::IntoIter {
+        self.into_iter()
+    }
+
+    /// returns an iterator that allows modifying each pixel
+    pub fn iter_mut(&mut self) -> <&mut Self as IntoIterator>::IntoIter {
+        self.buf.iter_mut()
+    }
+    /// the height of the image; i.e, `buf.len() / width`
+    pub fn height(&self) -> u32 {
+        self.len() as u32 / self.width
+    }
     /// map a function on P across the image buffer, converting an `Img<P>` to an `Img<Q>`
+
     pub fn convert_with<Q>(self, convert: impl Fn(P) -> Q) -> Img<Q> {
         let Img { buf, width } = self;
         Img {
@@ -60,11 +97,11 @@ impl Img<RGB<u8>> {
     }
     /// the raw_buf flattens out each RGB triplet;
     /// ```
-    /// use dither::img::*;
-    /// let img: Img<RGB<u8>> = Img{buf: vec![RGB(0, 1, 2), RGB(1, 1, 1)], width: 1};
+    /// use dither::prelude::*;
+    /// let img: Img<RGB<u8>> = Img::new(vec![RGB(0, 1, 2), RGB(1, 1, 1)], 1).unwrap();
     /// assert_eq!(img.raw_buf(), vec![0, 1, 2, 1, 1, 1]);
     /// ```
-    fn raw_buf(self) -> Vec<u8> {
+    pub fn raw_buf(self) -> Vec<u8> {
         let mut raw_buf = Vec::with_capacity(self.len() * 3);
         for RGB(r, g, b) in self.buf {
             raw_buf.push(r);
@@ -86,5 +123,29 @@ impl<P> std::ops::IndexMut<(u32, u32)> for Img<P> {
     fn index_mut(&mut self, (x, y): (u32, u32)) -> &mut P {
         let i = self.idx((x, y));
         &mut self.buf[i]
+    }
+}
+
+impl<P> IntoIterator for Img<P> {
+    type Item = P;
+    type IntoIter = std::vec::IntoIter<P>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.buf.into_iter()
+    }
+}
+
+impl<'a, P> IntoIterator for &'a Img<P> {
+    type Item = &'a P;
+    type IntoIter = std::slice::Iter<'a, P>;
+    fn into_iter(self) -> Self::IntoIter {
+        (&self.buf).iter()
+    }
+}
+
+impl<'a, P> IntoIterator for &'a mut Img<P> {
+    type Item = &'a mut P;
+    type IntoIter = std::slice::IterMut<'a, P>;
+    fn into_iter(self) -> Self::IntoIter {
+        (&mut self.buf).iter_mut()
     }
 }

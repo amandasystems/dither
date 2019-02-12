@@ -20,10 +20,8 @@ pub struct Opt {
     #[structopt(long = "depth", default_value = "1")]
     pub bit_depth: u8,
 
-    /// Output file: will be written to as a .png or .jpg (inferred from file extension) If left empty,
-    /// it will be saved to a .png with the follwing information:
-    /// "{base}_dithered_{dither}_{color}_{depth}.png"
-    /// `$dither bunny.png --color=color --dither=atkinson --depth=2` will save to bunny_atkinson_c_2.png
+    /// Output file: will be written to as a .png or .jpg (inferred from file extension). If left empty,
+    /// a default output path will be created: see [dither::opts::Opt::output_path]
     #[structopt(name = "output", parse(from_os_str))]
     output: Option<PathBuf>,
 
@@ -49,6 +47,11 @@ pub struct Opt {
 }
 
 impl Opt {
+    /// the actual output path. if opts.output exists, this is that; otherwise, this is
+    /// "{base}_dithered_{dither}_{color}_{depth}.png",
+    /// where base is the input path, stripped of it's extension.
+    /// `$dither bunny.png --color=color --dither=atkinson --depth=2` will save to bunny_atkinson_c_2.png
+    ///
     pub fn output_path(&self) -> std::borrow::Cow<PathBuf> {
         if let Some(output) = &self.output {
             std::borrow::Cow::Borrowed(output)

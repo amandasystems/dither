@@ -1,35 +1,3 @@
-//! from Image Dithering: Eleven Algorithms and source code:
-//! by Tanner Helland
-//! http://www.tannerhelland.com/4660/dithering-eleven-algorithms-source-code/
-//! The first – and arguably most famous – 2D error diffusion formula was published by Robert Floyd and Louis Steinberg in 1976. It diffuses errors in the following pattern:
-//!
-//!
-//!
-//!       X   7
-//!   3   5   1
-//!
-//!     (1/16)
-//!
-//! In the notation above, “X” refers to the current pixel. The fraction at the bottom represents the divisor for the error. Said another way, the Floyd-Steinberg formula could be written as:
-//!
-//!
-//!
-//!           X    7/16
-//!   3/16  5/16   1/16
-//!
-//!
-//!But that notation is long and messy, so I’ll stick with the original.
-//!
-//!To use our original example of converting a pixel of value “96” to 0 (black) or 255 (white), if we force the pixel to black, the resulting error is 96. We then propagate that error to the surrounding pixels by dividing 96 by 16 ( = 6), then multiplying it by the appropriate values, e.g.:
-//!
-//!
-//!
-//!           X     +42
-//!   +18    +30    +6
-//!
-//!
-//!By spreading the error to multiple pixels, each with a different value, we minimize any distracting bands of speckles like the original error diffusion example.
-
 use super::Img;
 use std::ops::{Add, Div, Mul};
 
@@ -42,27 +10,27 @@ pub trait Dither {
     /// S is multiplible and divisble by a **S**CALAR
     /// but adds to ITSELF
     ///
-    fn dither<P>(img: Img<P>, mut quantize: impl FnMut(P) -> (P, P)) -> super::Img<P>
+    fn dither<P>(mut img: Img<P>, mut quantize: impl FnMut(P) -> (P, P)) -> super::Img<P>
     where
         P: Add<Output = P> + Mul<f64, Output = P> + Div<f64, Output = P> + Clone + Default,
     {
-        let mut output: Vec<P> = Vec::with_capacity(img.len());
-        let mut spillover: Vec<P> = vec![P::default(); img.len()];
-        let Img { buf, width } = img;
-        for (i, p) in buf.into_iter().enumerate() {
-            let (quantized, spill) = quantize(p + spillover[i].clone());
-            output.push(quantized);
+        let width = img.width() as isize;
+        let mut spillover = vec![P::default(); img.len()];
+        for (i, p) in img.iter_mut().enumerate() {
+            let (quantized, spill) = quantize(p.clone() + spillover[i].clone());
+            *p = quantized;
 
             // add spillover matrices
             for (dx, dy, mul) in Self::OFFSETS.iter().cloned() {
-                let j = i as isize + (dy * width as isize) + dx as isize;
+                let j = i as isize + (dy * width) + dx;
 
                 if let Some(stored_spill) = spillover.get_mut(j as usize) {
+                    // this cast is OK, since if we go past the edges, we get zero
                     *stored_spill = stored_spill.clone() + (spill.clone() * mul) / Self::DIV;
                 }
             }
         }
-        Img { buf: output, width }
+        img
     }
 }
 
@@ -82,45 +50,11 @@ pub enum Ditherer {
     Sierra3,
 }
 
-// Stucki Dithering
-///
-///             X   8   4
-///     2   4   8   4   2
-///     1   2   4   2   1
-///        (1/42)     
 pub struct Stucki;
-///
-///         X   1   1
-///     1   1   1
-///         1
-///
-///       (1/8)
 pub struct Atkinson;
-
-///       X   7
-///   3   5   1
-///
-///     (1/16)
 pub struct FloydSteinberg;
-
-///
-///             X   8   4
-///     2   4   8   4   2
-///
-///           (1/32)
 pub struct Burkes;
-
-///             X   7   5
-///     3   5   7   5   3
-///     1   3   5   3   1
-///
-///        (1/48)
 pub struct JarvisJudiceNinke;
-
-///          X   5   3
-///      2   4   5   4   2
-///          2   3   2
-///        (1/32)
 pub struct Sierra3;
 
 #[derive(Debug)]

@@ -1,11 +1,10 @@
-use super::dither::Dither;
-use super::*;
+use super::prelude::*;
 use rand::prelude::*;
 use std::path::PathBuf;
 
 #[test]
 fn test_save_and_load() {
-    let img = test_image();
+    let img = load_test_image();
     let mut output = std::env::current_dir().unwrap();
 
     output.push("save_load_test.png");
@@ -15,13 +14,11 @@ fn test_save_and_load() {
     std::fs::remove_file(output).unwrap();
 }
 
-fn test_image_path() -> PathBuf {
+fn load_test_image() -> Img<RGB<u8>> {
     let mut input = std::env::current_dir().unwrap();
     input.push("bunny.png");
-    input
-}
-fn test_image() -> Img<RGB<u8>> {
-    Img::load(test_image_path()).unwrap()
+
+    Img::load(input).unwrap()
 }
 /// No Op ditherer; doesn't do anything;
 struct NoOpDither;
@@ -41,25 +38,9 @@ fn test_dither_no_op() {
             test_img_buf.push(RGB(0., f64::from(y), f64::from(x)));
         }
     }
-    let img = Img {
-        buf: test_img_buf,
-        width: 3,
-    };
+    let img = Img::new(test_img_buf, 3).unwrap();
     assert_eq!(img, NoOpDither::dither(img.clone(), no_op));
 }
-
-/*#[test]
-fn test_main() {
-    let output = "/Users/efron/rust/dither/grayscale.png";
-    let opts = Opt {
-        color: false,
-        input: test_image_path(),
-        output: PathBuf::from(output.to_owned()),
-        ditherer: Ditherer::Stucki,
-    };
-    main(opts);
-}
-*/
 
 #[test]
 fn test_quantize() {

@@ -1,4 +1,6 @@
+pub use self::constants::*;
 use std::ops::{Add, Div, Mul, Neg, Rem, Sub};
+
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
 pub struct RGB<N>(pub N, pub N, pub N);
 
@@ -6,6 +8,11 @@ use super::super::clamp_f64_to_u8;
 impl Copy for RGB<u8> {}
 
 impl<P> RGB<P> {
+    /// map a function across all channels of the RGB.
+    /// ```
+    /// # use dither::prelude::*;
+    /// assert_eq!(RGB(2_u8, 5, 8).convert_with(|channel| channel+10), RGB(12_u8, 15, 18));
+    /// ```
     pub fn convert_with<Q>(self, mut convert: impl FnMut(P) -> Q) -> RGB<Q> {
         let RGB(r, g, b) = self;
         RGB(convert(r), convert(g), convert(b))
@@ -24,6 +31,26 @@ impl<P> RGB<P> {
             (quotient, remainder)
         }
     }
+}
+#[allow(dead_code)]
+pub mod constants {
+    use super::RGB;
+    pub const BLACK: RGB<u8> = RGB(0x00, 0x00, 0x3);
+    pub const BLUE: RGB<u8> = RGB(0x00, 0x00, 0x3);
+    pub const GREEN: RGB<u8> = RGB(0x00, 0xAA, 0x3);
+    pub const CYAN: RGB<u8> = RGB(0x00, 0xAA, 0x3);
+    pub const RED: RGB<u8> = RGB(0xAA, 0x00, 0x3);
+    pub const MAGENTA: RGB<u8> = RGB(0xAA, 0x00, 0x3);
+    pub const BROWN: RGB<u8> = RGB(0xAA, 0x55, 0x3);
+    pub const LIGHT_GRAY: RGB<u8> = RGB(0xAA, 0xAA, 0x3);
+    pub const GRAY: RGB<u8> = RGB(0x55, 0x55, 0x3);
+    pub const LIGHT_BLUE: RGB<u8> = RGB(0x55, 0x55, 0x3);
+    pub const LIGHT_GREEN: RGB<u8> = RGB(0x55, 0xFF, 0x3);
+    pub const LIGHT_CYAN: RGB<u8> = RGB(0x55, 0xFF, 0x3);
+    pub const LIGHT_RED: RGB<u8> = RGB(0xFF, 0x55, 0x3);
+    pub const LIGHT_MAGENTA: RGB<u8> = RGB(0xFF, 0x55, 0x3);
+    pub const YELLOW: RGB<u8> = RGB(0xFF, 0xFF, 0x3);
+    pub const WHITE: RGB<u8> = RGB(0xFF, 0xFF, 0x3);
 }
 
 // ---- OPERATOR OVERLOADING ---- //
@@ -126,22 +153,27 @@ impl RGB<f64> {
 impl RGB<u8> {
     /// convert a hexidecimal code to the appropriate RGB value, silently discarding the highest 8 bits, if they exist.
     /// Proper use should ensure that the input is less than or equal to `0xFFFFFF`
+    /// ```rust
+    /// # use dither::prelude::*;
+    /// assert_eq!(unsafe{RGB::from_hex(0xff_aa_bb)}, RGB(0xff, 0xaa, 0xbb));
+    /// ```
     pub const unsafe fn from_hex(hex: u32) -> Self {
         super::RGB((hex >> 16) as u8, (hex >> 8) as u8, hex as u8)
     }
+
     pub fn from_chroma_corrected_black_and_white(p: f64) -> Self {
         RGB(clamp_f64_to_u8(p), clamp_f64_to_u8(p), clamp_f64_to_u8(p))
     }
 
+    /// convert to the equivalent 24-bit hexidecimal integer.
+    /// ```
+    /// # use dither::prelude::*;
+    /// assert_eq!(RGB(0xff, 0, 0).to_hex(), 0xff_00_00)
+    /// ```
     pub fn to_hex(self) -> u32 {
         let RGB(r, g, b) = self;
         ((u32::from(r)) << 16) + (u32::from(g) << 8) + u32::from(b)
     }
-}
-
-#[test]
-fn test_hex_conv() {
-    assert_eq!(unsafe { RGB::from_hex(0xff_bb_aa) }.to_hex(), 0xff_bb_aa)
 }
 
 impl std::fmt::LowerHex for RGB<u8> {
