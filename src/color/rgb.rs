@@ -1,10 +1,12 @@
 pub use self::constants::*;
+use crate::clamp_f64_to_u8;
+
 use std::ops::{Add, Div, Mul, Neg, Rem, Sub};
 
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
+/// RGB represents a triplet of pixels (r, g, b).
 pub struct RGB<N>(pub N, pub N, pub N);
 
-use super::super::clamp_f64_to_u8;
 impl Copy for RGB<u8> {}
 
 impl<P> RGB<P> {
@@ -33,6 +35,7 @@ impl<P> RGB<P> {
     }
 }
 #[allow(dead_code)]
+/// constants for known RGB values, corresponding to those in [`CGA`][`crate::color::CGA`]
 pub mod constants {
     use super::RGB;
     pub const BLACK: RGB<u8> = RGB(0x00, 0x00, 0x3);

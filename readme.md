@@ -13,7 +13,7 @@ dither --help
 ## usage
 
 ```bash
-dither INPUT [OUTPUT] [-v] [--ditherer] [--color] [--bit_depth]
+dither INPUT [OUTPUT] [-v] [--ditherer] [--color] [--depth]
 ```
 
 example:

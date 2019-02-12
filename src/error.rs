@@ -1,14 +1,17 @@
+use crate::color;
 #[derive(Debug)]
 /// Error types for [super::main]
 pub enum Error {
     IO(std::io::Error),
     Image(image::ImageError),
+    /// A bit depth that's not in the range `0..8`
     BadBitDepth(u8),
-    Color(super::color::Error),
+    /// An error creating a color mode.
+    Color(color::Error),
+    /// Incompatible options in [crate::opts::Opt]
     IncompatibleOptions,
 }
 
-/// Result type for [super::main]
 pub type Result<T> = std::result::Result<T, Error>;
 
 impl std::fmt::Display for Error {
@@ -26,8 +29,8 @@ impl std::fmt::Display for Error {
     }
 }
 
-impl From<super::color::Error> for Error {
-    fn from(err: super::color::Error) -> Self {
+impl From<color::Error> for Error {
+    fn from(err: color::Error) -> Self {
         Error::Color(err)
     }
 }

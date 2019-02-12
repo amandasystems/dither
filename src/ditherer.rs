@@ -1,7 +1,9 @@
 use super::Img;
 use std::ops::{Add, Div, Mul};
 
-/// A type of Dither. Available dithers are [Stucki], [Atkinson], [FloydSteinberg], [Burkes], [JarvisJudiceNinke], [Sierra3]
+/// A type of Dither. Available dithers are [Stucki], [Atkinson], [FloydSteinberg], [Burkes], [JarvisJudiceNinke], [Sierra3].
+/// See [tanner helland's excellent writeup on dithering algorithms](http://www.tannerhelland.com/4660/dithering-eleven-algorithms-source-code/)
+/// for details.
 pub trait Dither {
     const DIV: f64;
     const OFFSETS: &'static [(isize, isize, f64)];

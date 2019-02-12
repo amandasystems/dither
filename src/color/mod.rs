@@ -16,10 +16,13 @@ pub enum Mode {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-/// An error handling a color
+/// An error handling the `--color` input option.
 pub enum Error {
+    /// An unknown or unimplemented option
     UnknownOption,
+    /// An input color that's not in the range `0..=0xFF_FF_FF`
     BadPaletteColor(u32),
+    /// Error parsing the palette as a hexidecimal unsigned integer
     CouldNotParsePalette(std::num::ParseIntError),
 }
 
