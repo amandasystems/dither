@@ -42,18 +42,21 @@ where
         for y in 0..height {
             for dx in 0..width {
                 // we reverse the x-direction of the dithering every row to reduce banding
-                let x = if y % 2 == 0 { dx } else { width - dx - 1 };
-                let (quantized, spill) = quantize(img[(x, y)].clone() + spillover[(x, y)].clone());
+                let x = if y % 2 == 0 { dx } else { width - (dx + 1) };
+
+                let (p, spill) = (img[(x, y)].clone(), spillover[(x, y)].clone());
+                let (quantized, spill) = quantize(p + spill);
                 img[(x, y)] = quantized;
 
                 // add spillover matrices
+                let spill = spill / self.div;
+                let (x, y) = (x as isize, y as isize);
                 for (dx, dy, mul) in self.offsets.iter().cloned() {
-                    let xj = dx + x as isize;
-                    let yj = dy + y as isize;
-
-                    if let Some(stored_spill) = spillover.get_mut((xj as u32, yj as u32)) {
+                    if let Some(stored_spill) =
+                        spillover.get_mut(((x + dx) as u32, (y + dy) as u32 * width))
+                    {
                         // this cast is OK, since if we go past the edges, we get zero
-                        *stored_spill = stored_spill.clone() + (spill.clone() * mul) / self.div;
+                        *stored_spill = stored_spill.clone() + (spill.clone() * mul)
                     }
                 }
             }

@@ -1,7 +1,8 @@
 mod cga;
+pub mod hex;
 mod rgb;
-pub use self::cga::CGA;
 
+pub use self::cga::CGA;
 pub use self::rgb::RGB;
 use regex::Regex;
 use std::str::FromStr;

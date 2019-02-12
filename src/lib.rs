@@ -1,16 +1,21 @@
 //! # Dither
 //!
 //! Inspired by: <http://www.tannerhelland.com/4660/dithering-eleven-algorithms-source-code/>
-
+//! See [Ditherer] for the implementation.
 #[macro_use]
 extern crate lazy_static;
 
-/// handling of color
+/// handling of color, including [RGB], [CGA], and single-color modes
 pub mod color;
+/// the [Dither] trait itself and implementation of the various dithering modes
 pub mod ditherer;
+/// error handling and result types
 pub mod error;
+/// a helper type for dealing with rectangular images as raw buffers
 pub mod img;
+/// command-line options and documentation
 pub mod opts;
+/// contains the most-used traits and structs for easy import and export
 pub mod prelude;
 
 use self::prelude::*;

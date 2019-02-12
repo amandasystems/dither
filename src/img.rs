@@ -1,7 +1,7 @@
 use super::Result;
 use super::RGB;
 use std::path::Path;
-/// A rectangular image on N pixels.
+/// A rectangular image on N pixels. Essentially a wrapper around the raw pixel buffer with some helper methods to access by `(x, y)` pair.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Img<P> {
     buf: Vec<P>,
@@ -28,6 +28,10 @@ impl<P> Img<P> {
         self.buf
     }
 
+    /// the height of the image; i.e, `buf.len() / width`
+    pub fn height(&self) -> u32 {
+        self.len() as u32 / self.width
+    }
     /// get the width of the image
     pub fn width(&self) -> u32 {
         self.width
@@ -36,22 +40,22 @@ impl<P> Img<P> {
     pub fn iter(&self) -> <&Self as IntoIterator>::IntoIter {
         self.into_iter()
     }
-
-    pub fn get_mut(&mut self, i: (u32, u32)) -> Option<&mut P> {
-        let i = self.idx(i);
-        self.buf.get_mut(i)
-    }
     /// returns an iterator that allows modifying each pixel
     pub fn iter_mut(&mut self) -> <&mut Self as IntoIterator>::IntoIter {
         self.buf.iter_mut()
     }
 
-    /// the height of the image; i.e, `buf.len() / width`
-    pub fn height(&self) -> u32 {
-        self.len() as u32 / self.width
+    /// Returns a reference to an element at `(x, y)`.
+    pub fn get(&self, (x, y): (u32, u32)) -> Option<&P> {
+        self.buf.get(self.idx((x, y)))
     }
-    /// map a function on P across the image buffer, converting an `Img<P>` to an `Img<Q>`
+    /// get mutable access to the pixel at `(x, y)`;
+    pub fn get_mut(&mut self, i: (u32, u32)) -> Option<&mut P> {
+        let i = self.idx(i);
+        self.buf.get_mut(i)
+    }
 
+    /// map a function on P across the image buffer, converting an `Img<P>` to an `Img<Q>`
     pub fn convert_with<Q>(self, convert: impl Fn(P) -> Q) -> Img<Q> {
         let Img { buf, width } = self;
         Img {
@@ -63,21 +67,18 @@ impl<P> Img<P> {
     fn idx(&self, (x, y): (u32, u32)) -> usize {
         (y.wrapping_mul(self.width).wrapping_add(x)) as usize
     }
+    /// Returns the number of pixels in the image.
     pub fn len(&self) -> usize {
         self.buf.len()
     }
-
+    /// Returns true if the image is not empty. Should always be true.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
-    /// Returns a reference to an element.
-    pub fn get(&self, (x, y): (u32, u32)) -> Option<&P> {
-        self.buf.get(self.idx((x, y)))
-    }
     /// Returns a pair `(width, height)`.
     pub fn size(&self) -> (u32, u32) {
-        (self.width, self.len() as u32 / self.width as u32)
+        (self.width, self.height())
     }
 }
 
