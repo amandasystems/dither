@@ -1,23 +1,27 @@
 //! # Dither
+//! # Written by Efron Licht. Available under the MIT license. Hire me!
+//!
 //!
 //! Inspired by: <http://www.tannerhelland.com/4660/dithering-eleven-algorithms-source-code/>
+//! and the game "Return of the Obra Dinn"
 
 #[macro_use]
 extern crate lazy_static;
 
-/// handling of color
 pub mod color;
 pub mod ditherer;
-pub mod error;
-pub mod img;
-pub mod opts;
+mod error;
+mod img;
+mod opts;
 pub mod prelude;
+pub use self::error::Error;
+pub use self::error::Result;
 
 use self::prelude::*;
 #[cfg(test)]
 mod tests;
 
-/// quantize to n bits
+/// quantize to n bits. See the [bit_depth][crate::opts::Opt] option.
 pub fn create_quantize_n_bits_func(n: u8) -> Result<impl FnMut(f64) -> (f64, f64)> {
     if n == 0 || n > 7 {
         Err(Error::BadBitDepth(n))
@@ -42,7 +46,8 @@ pub fn create_quantize_n_bits_func(n: u8) -> Result<impl FnMut(f64) -> (f64, f64
     }
 }
 
-/// create a function that converts a quantized black-and-white image to the appropriate palette. i.e,
+/// create a function that converts a quantized black-and-white image to the appropriate palette.
+/// See [CustomPalette][crate::color::Mode::CustomPalette] i.e,
 /// ```
 /// # use dither::create_convert_quantized_to_palette_func;
 /// # use dither::prelude::*;

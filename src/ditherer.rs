@@ -1,13 +1,15 @@
+//! Logic for dithering a loaded, preprocessed [Img][crate::img::Img].
+//! See [tanner helland's excellent writeup on dithering algorithms](http://www.tannerhelland.com/4660/dithering-eleven-algorithms-source-code/) for details.
 use super::Img;
 use std::ops::{Add, Div, Mul};
 
 /// dither a 2d matrix.
-/// `P` is the type of pixel ([`u8`], [`RGB<f64>`]);
+/// `P`  is the type of pixel; in practice, it is either [f64] or [`RGB<f64>`][RGB]
 pub trait Dither<P> {
     fn dither(&self, img: Img<P>, quantize: impl FnMut(P) -> (P, P)) -> Img<P>;
 }
-/// A type of Dither. Available dithers are [Stucki], [Atkinson], [FloydSteinberg], [Burkes], [JarvisJudiceNinke], [Sierra3].
-/// a ditherer carries error from quantiation to nearby pixels after dividing by `div` and multiplying by the given scalar in offset; "spreading" the error,
+/// A type of Dither. See the documentation for the constants (i.e, [ATKINSON]) for the dither matrices themselves.
+/// A ditherer carries error from quantiation to nearby pixels after dividing by `div` and multiplying by the given scalar in offset; "spreading" the error,
 /// eg, take floyd-steinberg dithering: `div=16`
 /// - ` . x   7 `
 /// - ` 7 5  1`
@@ -24,11 +26,13 @@ pub trait Dither<P> {
 #[derive(Clone, Debug)]
 pub struct Ditherer<'a> {
     div: f64,
+    /// offsets represents a triplet (dx, dy, mul)
     offsets: &'a [(isize, isize, f64)],
     name: Option<&'a str>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// An unknown ditherer name during parsing.
 pub struct ErrorUnknownDitherer(String);
 
 impl<'a> Ditherer<'a> {
@@ -45,11 +49,8 @@ impl<'a, P> Dither<P> for Ditherer<'a>
 where
     P: Add<Output = P> + Mul<f64, Output = P> + Div<f64, Output = P> + Clone + Default,
 {
-    /// dither a 2d matrix.
-    /// `P` is the type of pixel ([`u8`], [RGB<f64, f64, f64>]);
-    /// S is multiplible and divisble by a **S**CALAR
-    /// but adds to ITSELF
-    ///
+    /// dither an image using the specified offsets and divisor.
+    /// `P` is the type of pixel; in practice, it is either [f64] or [RGB<f64]
     fn dither(&self, mut img: Img<P>, mut quantize: impl FnMut(P) -> (P, P)) -> super::Img<P> {
         let width = img.width() as isize;
         let mut spillover = vec![P::default(); img.len()];

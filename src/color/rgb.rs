@@ -1,13 +1,10 @@
 pub use self::constants::*;
-use crate::clamp_f64_to_u8;
-
-use std::ops::{Add, Div, Mul, Neg, Rem, Sub};
+use std::ops::*;
 
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
 /// RGB represents a triplet of pixels (r, g, b).
+/// u8, i8, i16, and u16 are all one-word COPY types.
 pub struct RGB<N>(pub N, pub N, pub N);
-
-impl Copy for RGB<u8> {}
 
 impl<P> RGB<P> {
     /// map a function across all channels of the RGB.
@@ -55,6 +52,11 @@ pub mod constants {
     pub const YELLOW: RGB<u8> = RGB(0xFF, 0xFF, 0x3);
     pub const WHITE: RGB<u8> = RGB(0xFF, 0xFF, 0x3);
 }
+
+impl Copy for RGB<u8> {}
+impl Copy for RGB<i8> {}
+impl Copy for RGB<i16> {}
+impl Copy for RGB<u16> {}
 
 // ---- OPERATOR OVERLOADING ---- //
 
@@ -165,7 +167,8 @@ impl RGB<u8> {
     }
 
     pub fn from_chroma_corrected_black_and_white(p: f64) -> Self {
-        RGB(clamp_f64_to_u8(p), clamp_f64_to_u8(p), clamp_f64_to_u8(p))
+        let clamp = crate::clamp_f64_to_u8;
+        RGB(clamp(p), clamp(p), clamp(p))
     }
 
     /// convert to the equivalent 24-bit hexidecimal integer.
@@ -181,6 +184,6 @@ impl RGB<u8> {
 
 impl std::fmt::LowerHex for RGB<u8> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{:x}", self.to_hex())
+        write!(f, "{:x}", self.clone().to_hex())
     }
 }

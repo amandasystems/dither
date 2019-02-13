@@ -1,3 +1,4 @@
+//! The actual runtime library.
 use dither::prelude::*;
 use structopt::StructOpt;
 fn main() -> Result<()> {

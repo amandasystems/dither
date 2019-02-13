@@ -1,5 +1,6 @@
 use super::RGB;
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
+/// The CGA color palette. This treats [CGA::Yellow] as a true yellow rather than the traditional light brown.
 pub enum CGA {
     Black = 0,
     Blue = 1,
@@ -11,43 +12,36 @@ pub enum CGA {
     LightGray = 7,
     Gray = 8,
     LightBlue = 9,
-    LightGreen = 10,
-    LightCyan = 11,
-    LightRed = 12,
-    LightMagenta = 13,
-    Yellow = 14,
-    White = 15,
+    LightGreen = 0xA,
+    LightCyan = 0xB,
+    LightRed = 0xC,
+    LightMagenta = 0xD,
+    Yellow = 0xE,
+    White = 0xF,
 }
 
-pub mod hex {
-    pub const BLACK: u32 = 0x00_00_00;
-    pub const BLUE: u32 = 0x00_00_AA;
-    pub const GREEN: u32 = 0x00_AA_00;
-    pub const CYAN: u32 = 0x00_AA_AA;
-    pub const RED: u32 = 0xAA_00_00;
-    pub const MAGENTA: u32 = 0xAA_00_AA;
-    pub const BROWN: u32 = 0xAA_55_00;
-    pub const LIGHT_GRAY: u32 = 0xAA_AA_AA;
-    pub const GRAY: u32 = 0x55_55_55;
-    pub const LIGHT_BLUE: u32 = 0x55_55_FF;
-    pub const LIGHT_GREEN: u32 = 0x55_FF_55;
-    pub const LIGHT_CYAN: u32 = 0x55_FF_FF;
-    pub const LIGHT_RED: u32 = 0xFF_55_55;
-    pub const LIGHT_MAGENTA: u32 = 0xFF_55_FF;
-    pub const YELLOW: u32 = 0xFF_FF_55;
-    pub const WHITE: u32 = 0xFF_FF_FF;
-
-}
 impl CGA {
     /// quantize a RGB triplet to the closest CGA color and error.
-    /// this is a somewhat naive/ inefficient implementation; i'm sure I can do better.
+    /// ```
+    /// # use dither::prelude::*;
+    /// let nearly_red = RGB(f64::from(0xAA-3), 0., 0.);
+    /// let (got, got_err) = CGA::quantize(nearly_red);
+    /// assert_eq!(got, RGB::from(CGA::Red));
+    /// assert_eq!(got_err, RGB(3., 0., 0.));
+    /// ```
+
+    /// an iterator through all the variations of the enum
+    pub fn iter() -> impl Iterator<Item = Self> {
+        Self::COLORS.iter().cloned()
+    }
 
     pub fn quantize(RGB(r0, g0, b0): RGB<f64>) -> (RGB<f64>, RGB<f64>) {
+        // dev note: this is naive implementation and the back of my mind says I can do better
         let mut min_abs_err = std::f64::INFINITY;
         let mut closest = RGB::default();
         let mut min_err = RGB::default();
 
-        for RGB(r1, g1, b1) in CGA::COLORS.iter().cloned().map(RGB::<f64>::from) {
+        for RGB(r1, g1, b1) in CGA::iter().map(RGB::<f64>::from) {
             let abs_err = f64::abs(r0 - r1) + f64::abs(g0 - g1) + f64::abs(b0 - b1);
             if abs_err < min_abs_err {
                 min_err = RGB(r0 - r1, g0 - g1, b0 - b1);
@@ -59,31 +53,9 @@ impl CGA {
     }
 }
 
-#[test]
-fn test_quantize() {
-    let cyan: RGB<f64> = RGB::from(CGA::Cyan);
-    let offset = RGB(1.2, 2.2, -3.1);
-    let nearly_cyan = cyan.clone() + offset.clone();
-
-    let (got_quantized, RGB(dr, dg, db)) = CGA::quantize(nearly_cyan);
-    assert_eq!(got_quantized, cyan);
-
-    let want_abs_err = 1.2 + 2.2 + 3.1;
-    let got_abs_err = dr.abs() + dg.abs() + db.abs();
-    assert!(f64::abs(got_abs_err - want_abs_err) < 1e-9); // need to account for floating point error
-}
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct UnknownCGAColorError;
-
-impl std::fmt::Display for UnknownCGAColorError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "unknown CGA color")
-    }
-}
-
-impl std::error::Error for UnknownCGAColorError {}
-
+// constants
 impl CGA {
+    /// slice conai
     pub const COLORS: [CGA; 16] = [
         CGA::Black,
         CGA::Blue,
@@ -102,45 +74,120 @@ impl CGA {
         CGA::Yellow,
         CGA::White,
     ];
+    /// hexidecimal representation of [CGA::Black]
+    pub const BLACK: u32 = 0x00_00_00;
+    /// hexidecimal representation of [CGA::Blue]
+    pub const BLUE: u32 = 0x00_00_AA;
+    /// hexidecimal representation of [CGA::Green]
+    pub const GREEN: u32 = 0x00_AA_00;
+    /// hexidecimal representation of [CGA::Cyan]
+    pub const CYAN: u32 = 0x00_AA_AA;
+    /// hexidecimal representation of [CGA::Red]
+    pub const RED: u32 = 0xAA_00_00;
+    /// hexidecimal representation of [CGA::Magenta]
+    pub const MAGENTA: u32 = 0xAA_00_AA;
+    /// hexidecimal representation of [CGA::Brown]
+    pub const BROWN: u32 = 0xAA_55_00;
+    /// hexidecimal representation of [CGA::LightGray]
+    pub const LIGHT_GRAY: u32 = 0xAA_AA_AA;
+    /// hexidecimal representation of [CGA::Gray]
+    pub const GRAY: u32 = 0x55_55_55;
+    /// hexidecimal representation of [CGA::LightBlue]
+    pub const LIGHT_BLUE: u32 = 0x55_55_FF;
+    /// hexidecimal representation of [CGA::LightGreen]
+    pub const LIGHT_GREEN: u32 = 0x55_FF_55;
+    /// hexidecimal representation of [CGA::LightCyan]
+    pub const LIGHT_CYAN: u32 = 0x55_FF_FF;
+    /// hexidecimal representation of [CGA::LightRed]
+    pub const LIGHT_RED: u32 = 0xFF_55_55;
+    /// hexidecimal representation of [CGA::LightMagenta]
+    pub const LIGHT_MAGENTA: u32 = 0xFF_55_FF;
+    /// hexidecimal representation of [CGA::Yellow]
+    pub const YELLOW: u32 = 0xFF_FF_55;
+    /// hexidecimal representation of [CGA::White]
+    pub const WHITE: u32 = 0xFF_FF_FF;
+}
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+/// An error parsing a CGA color.
+pub struct UnknownCGAColorError;
+
+impl std::fmt::Display for UnknownCGAColorError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            r#"unknown CGA color. options are: 
+            "BLACK",
+            "BLUE",
+            "GREEN",
+            "CYAN",
+            "RED",
+            "MAGENTA",
+            "BROWN",
+            "LIGHT_GRAY",
+            "GRAY",
+            "LIGHT_BLUE",
+            "LIGHT_GREEN",
+            "LIGHT_CYAN",
+            "LIGHT_RED",
+            "LIGHT_MAGENTA",
+            "YELLOW",
+            "WHITE"#,
+        )
+    }
+}
+
+impl std::error::Error for UnknownCGAColorError {}
+
+impl CGA {
+    /// convert to the equivalent hexideicmal code.
+    /// ``` rust
+    /// # use dither::prelude::*;
+    /// assert_eq!(CGA::Red.to_hex(), CGA::RED)
+    /// ```
     pub fn to_hex(self) -> u32 {
         match self {
-            CGA::Black => hex::BLACK,
-            CGA::Blue => hex::BLUE,
-            CGA::Green => hex::GREEN,
-            CGA::Cyan => hex::CYAN,
-            CGA::Red => hex::RED,
-            CGA::Magenta => hex::MAGENTA,
-            CGA::Brown => hex::BROWN,
-            CGA::LightGray => hex::LIGHT_GRAY,
-            CGA::Gray => hex::GRAY,
-            CGA::LightBlue => hex::LIGHT_BLUE,
-            CGA::LightGreen => hex::LIGHT_GREEN,
-            CGA::LightCyan => hex::LIGHT_CYAN,
-            CGA::LightRed => hex::LIGHT_RED,
-            CGA::LightMagenta => hex::LIGHT_MAGENTA,
-            CGA::Yellow => hex::YELLOW,
-            CGA::White => hex::WHITE,
+            CGA::Black => CGA::BLACK,
+            CGA::Blue => CGA::BLUE,
+            CGA::Green => CGA::GREEN,
+            CGA::Cyan => CGA::CYAN,
+            CGA::Red => CGA::RED,
+            CGA::Magenta => CGA::MAGENTA,
+            CGA::Brown => CGA::BROWN,
+            CGA::LightGray => CGA::LIGHT_GRAY,
+            CGA::Gray => CGA::GRAY,
+            CGA::LightBlue => CGA::LIGHT_BLUE,
+            CGA::LightGreen => CGA::LIGHT_GREEN,
+            CGA::LightCyan => CGA::LIGHT_CYAN,
+            CGA::LightRed => CGA::LIGHT_RED,
+            CGA::LightMagenta => CGA::LIGHT_MAGENTA,
+            CGA::Yellow => CGA::YELLOW,
+            CGA::White => CGA::WHITE,
         }
     }
-
+    /// convert a color specified as a hex code (i.e, 0xFF0000) to the appropriate CGA color, if it exists
+    /// ```
+    /// # use dither::prelude::*;
+    /// assert_eq!(CGA::try_from_hex(CGA::RED), Some(CGA::Red));
+    /// assert_eq!(CGA::try_from_hex(0x12_34_56), None);
+    /// ```
     pub fn try_from_hex(hex: u32) -> Option<Self> {
         Some(match hex {
-            hex::BLACK => CGA::Black,
-            hex::BLUE => CGA::Blue,
-            hex::GREEN => CGA::Green,
-            hex::CYAN => CGA::Cyan,
-            hex::RED => CGA::Red,
-            hex::MAGENTA => CGA::Magenta,
-            hex::BROWN => CGA::Brown,
-            hex::LIGHT_GRAY => CGA::LightGray,
-            hex::GRAY => CGA::Gray,
-            hex::LIGHT_BLUE => CGA::LightBlue,
-            hex::LIGHT_GREEN => CGA::LightGreen,
-            hex::LIGHT_CYAN => CGA::LightCyan,
-            hex::LIGHT_RED => CGA::LightRed,
-            hex::LIGHT_MAGENTA => CGA::LightMagenta,
-            hex::YELLOW => CGA::Yellow,
-            hex::WHITE => CGA::White,
+            CGA::BLACK => CGA::Black,
+            CGA::BLUE => CGA::Blue,
+            CGA::GREEN => CGA::Green,
+            CGA::CYAN => CGA::Cyan,
+            CGA::RED => CGA::Red,
+            CGA::MAGENTA => CGA::Magenta,
+            CGA::BROWN => CGA::Brown,
+            CGA::LIGHT_GRAY => CGA::LightGray,
+            CGA::GRAY => CGA::Gray,
+            CGA::LIGHT_BLUE => CGA::LightBlue,
+            CGA::LIGHT_GREEN => CGA::LightGreen,
+            CGA::LIGHT_CYAN => CGA::LightCyan,
+            CGA::LIGHT_RED => CGA::LightRed,
+            CGA::LIGHT_MAGENTA => CGA::LightMagenta,
+            CGA::YELLOW => CGA::Yellow,
+            CGA::WHITE => CGA::White,
             _ => return None,
         })
     }

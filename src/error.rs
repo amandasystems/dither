@@ -1,17 +1,21 @@
+//! Error and result types for runtime error.
 use crate::color;
 #[derive(Debug)]
-/// Error types for [super::main]
+/// Handling of runtime errors in main.
 pub enum Error {
+    /// An error from std::io;
     IO(std::io::Error),
+    // An error from the [image] package.
     Image(image::ImageError),
-    /// A bit depth that's not in the range `0..8`
+    /// A bit depth that's not in the [range][std::ops::Range] `0..8`
     BadBitDepth(u8),
-    /// An error creating a color mode.
+    /// An error creating a [color::Mode]
     Color(color::Error),
-    /// Incompatible options in [crate::opts::Opt]
+    /// Incompatible [options][crate::Opt] specified by the user.
     IncompatibleOptions,
 }
 
+/// Result type for [Error]
 pub type Result<T> = std::result::Result<T, Error>;
 
 impl std::fmt::Display for Error {

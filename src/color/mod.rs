@@ -1,3 +1,5 @@
+//! handling of color modes & [RGB].
+
 mod cga;
 mod rgb;
 pub use self::cga::CGA;
@@ -6,13 +8,29 @@ pub use self::rgb::RGB;
 use regex::Regex;
 use std::str::FromStr;
 #[derive(Clone, Debug, PartialEq, Eq)]
-/// Mode is the color mode the program runs in. Corresponds to option [super::Opt] `--color`
+/// Mode is the color mode the program runs in. Corresponds to [Opt][crate::Opt] `--color`
 pub enum Mode {
+    /// A user-specified custom palette, entered as a pair of hexidecimal numbers. ex: `--color="0xFF0000 0x0000FF`" (front RED, back BLUE)
     CustomPalette { front: RGB<u8>, back: RGB<u8> },
+
+    /// A single known [RGB] color.
+    /// -  `--color="RED"`
     SingleColor(CGA),
+    /// The 16-color [CGA] color palette. Mutually exclusive with the bit depth option.
+    /// - `--color="CGA"`.
     CGA,
+    /// Color dithering to the user-specified bit depth.
+    /// - `--color="color"`
     Color,
+    /// Grayscale dithering to the user-specified bit depth.
+    /// - `-color="bw"`(default)
     BlackAndWhite,
+}
+
+impl Default for Mode {
+    fn default() -> Self {
+        Mode::BlackAndWhite
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
