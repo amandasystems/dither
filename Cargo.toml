@@ -1,10 +1,10 @@
 [package]
 name = "dither"
-version = "1.0.5"
+version = "1.2.0"
 authors = ["Efron Licht <efron.python@gmail.com>"]
 edition = "2018"
 license = "MIT"
-description = "A ditherer for PNG images"
+description = "A ditherer for static images with a variety of color palettes"
 repository= "https://gitlab.com/efronlicht/dither"
 readme = "readme.md"
 [dependencies]

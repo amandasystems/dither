@@ -1,8 +1,9 @@
 use super::Result;
 use super::RGB;
+use std::ops::{Index, IndexMut};
 use std::path::Path;
 
-/// Wrapper type for manipulation of images as a buffer of pixels.
+/// Image as a flat buffer of pixels; accessible by (x, y) [Index]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Img<P> {
     buf: Vec<P>,
@@ -10,7 +11,7 @@ pub struct Img<P> {
 }
 
 impl<P> Img<P> {
-    /// create an Img<P> from a buf and width. fails if buf.len() is not an exact multiple of width.
+    /// create an Img<P> from a buf and width. fails if `buf.len() % buf.width() != 0`
     pub fn new(buf: impl IntoIterator<Item = P>, width: u32) -> Option<Self> {
         let buf: Vec<P> = buf.into_iter().collect();
         if width == 0 || buf.len() % width as usize != 0 {
@@ -124,8 +125,8 @@ impl Img<RGB<u8>> {
     /// save an image as a `.png` or `.jpg` to the path. the path extension determines the image type.
     /// See [image::ImageBuffer::save]
     pub fn save<P: AsRef<Path>>(self, path: P) -> Result<()> {
-        let height = self.buf.len() as u32 / self.width;
-        let buf = image::RgbImage::from_raw(self.width, height, self.raw_buf()).unwrap();
+        let (width, height) = self.size();
+        let buf = image::RgbImage::from_raw(width, height, self.raw_buf()).unwrap();
         buf.save(path)?;
         Ok(())
     }
@@ -146,14 +147,14 @@ impl Img<RGB<u8>> {
     }
 }
 
-impl<P> std::ops::Index<(u32, u32)> for Img<P> {
+impl<P> Index<(u32, u32)> for Img<P> {
     type Output = P;
     fn index(&self, (x, y): (u32, u32)) -> &P {
         &self.buf[self.idx((x, y))]
     }
 }
 
-impl<P> std::ops::IndexMut<(u32, u32)> for Img<P> {
+impl<P> IndexMut<(u32, u32)> for Img<P> {
     fn index_mut(&mut self, (x, y): (u32, u32)) -> &mut P {
         let i = self.idx((x, y));
         &mut self.buf[i]

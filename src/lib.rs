@@ -29,6 +29,7 @@ mod tests;
 /// let want = 0;
 /// assert_eq!(one_bit(100.), (0., 100.));
 /// assert_eq!(one_bit(250.), (255., -5.));
+///
 /// ```
 pub fn create_quantize_n_bits_func(n: u8) -> Result<impl Fn(f64) -> (f64, f64)> {
     if n == 0 || n > 7 {
