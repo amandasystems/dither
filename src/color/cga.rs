@@ -21,27 +21,26 @@ pub enum CGA {
 }
 
 impl CGA {
+    /// an iterator through all the variations of the enum
+    pub fn iter() -> impl Iterator<Item = Self> {
+        Self::COLORS.iter().cloned()
+    }
+
     /// quantize a RGB triplet to the closest CGA color and error.
     /// ```
     /// # use dither::prelude::*;
     /// let nearly_red = RGB(f64::from(0xAA-3), 0., 0.);
     /// let (got, got_err) = CGA::quantize(nearly_red);
     /// assert_eq!(got, RGB::from(CGA::Red));
-    /// assert_eq!(got_err, RGB(3., 0., 0.));
+    /// assert_eq!(got_err, RGB(-3., 0., 0.));
     /// ```
-
-    /// an iterator through all the variations of the enum
-    pub fn iter() -> impl Iterator<Item = Self> {
-        Self::COLORS.iter().cloned()
-    }
-
     pub fn quantize(RGB(r0, g0, b0): RGB<f64>) -> (RGB<f64>, RGB<f64>) {
         // dev note: this is naive implementation and the back of my mind says I can do better
         let mut min_abs_err = std::f64::INFINITY;
         let mut closest = RGB::default();
         let mut min_err = RGB::default();
 
-        for RGB(r1, g1, b1) in CGA::iter().map(RGB::<f64>::from) {
+        for RGB(r1, g1, b1) in CGA::iter().map(RGB::from) {
             let abs_err = f64::abs(r0 - r1) + f64::abs(g0 - g1) + f64::abs(b0 - b1);
             if abs_err < min_abs_err {
                 min_err = RGB(r0 - r1, g0 - g1, b0 - b1);
@@ -55,7 +54,7 @@ impl CGA {
 
 // constants
 impl CGA {
-    /// slice conai
+    /// array containing all of the enum variations
     pub const COLORS: [CGA; 16] = [
         CGA::Black,
         CGA::Blue,
@@ -113,26 +112,8 @@ pub struct UnknownCGAColorError;
 
 impl std::fmt::Display for UnknownCGAColorError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            r#"unknown CGA color. options are: 
-            "BLACK",
-            "BLUE",
-            "GREEN",
-            "CYAN",
-            "RED",
-            "MAGENTA",
-            "BROWN",
-            "LIGHT_GRAY",
-            "GRAY",
-            "LIGHT_BLUE",
-            "LIGHT_GREEN",
-            "LIGHT_CYAN",
-            "LIGHT_RED",
-            "LIGHT_MAGENTA",
-            "YELLOW",
-            "WHITE"#,
-        )
+        let names = CGA::iter().map(|cga| cga.into()).collect::<Vec<&str>>();
+        write!(f, "unknown CGA color. options are: {:#?},", names)
     }
 }
 

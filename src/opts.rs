@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use std::path::PathBuf;
 use structopt::StructOpt;
-#[derive(Debug, StructOpt, PartialEq, Clone)]
+#[derive(Debug, StructOpt, Default, PartialEq, Clone)]
 #[structopt(name = "dither")]
 /// Command-line interface & arguments. See [structopt].
 pub struct Opt {
@@ -69,6 +69,13 @@ impl Opt {
     /// where base is the input path, stripped of it's extension.
     /// `$dither bunny.png --color=color --dither=atkinson --depth=2` will save to `bunny_atkinson_c_2.png`
     ///
+    /// ```
+    /// # use dither::prelude::*;
+    /// let mut opt = Opt::default();
+    /// opt.bit_depth=1;
+    /// opt.input = std::path::PathBuf::from("bunny.png".to_string());
+    /// assert_eq!(opt.output_path().to_string_lossy(), "bunny_dithered_floyd_bw_1.png");
+    /// ```
     pub fn output_path(&self) -> std::borrow::Cow<PathBuf> {
         if let Some(output) = &self.output {
             std::borrow::Cow::Borrowed(output)

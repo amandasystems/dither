@@ -22,12 +22,20 @@ use self::prelude::*;
 mod tests;
 
 /// quantize to n bits. See the [bit_depth][crate::opts::Opt] option.
-pub fn create_quantize_n_bits_func(n: u8) -> Result<impl FnMut(f64) -> (f64, f64)> {
+/// ```
+/// # use dither::prelude::*;
+/// # use dither::create_quantize_n_bits_func;
+/// let one_bit = create_quantize_n_bits_func(1).unwrap();
+/// let want = 0;
+/// assert_eq!(one_bit(100.), (0., 100.));
+/// assert_eq!(one_bit(250.), (255., -5.));
+/// ```
+pub fn create_quantize_n_bits_func(n: u8) -> Result<impl Fn(f64) -> (f64, f64)> {
     if n == 0 || n > 7 {
         Err(Error::BadBitDepth(n))
     } else {
         Ok(move |x: f64| {
-            let step_size = 256. / f64::from(n);
+            let step_size = 255. / f64::from(n);
 
             let floor = f64::floor(x / step_size) * step_size;
             let floor_rem = x - floor;

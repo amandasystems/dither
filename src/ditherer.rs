@@ -248,3 +248,9 @@ impl<'a> PartialEq for Ditherer<'a> {
         (self.div, self.offsets) == (other.div, other.offsets)
     }
 }
+
+impl<'a> Default for Ditherer<'a> {
+    fn default() -> Self {
+        FLOYD_STEINBERG
+    }
+}

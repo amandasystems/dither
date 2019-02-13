@@ -38,20 +38,6 @@ fn test_dither_no_op() {
     assert_eq!(img, NO_OP_DITHER.dither(img.clone(), no_op));
 }
 
-#[test]
-fn test_quantize() {
-    const TOL: f64 = std::f64::EPSILON;
-    let uniform = rand::distributions::Uniform::from((0.)..(255.));
-    let mut rng = rand::thread_rng();
-    let mut q = create_quantize_n_bits_func(1).unwrap();
-    for _ in 0..20 {
-        let n = uniform.sample(&mut rng);
-        let (want_q, want_r) = quantize_1_bit(n);
-        let (got_q, got_r) = q(n);
-        assert!((got_q - want_q).abs() < TOL && (got_r - want_r).abs() < 1. + TOL);
-    }
-}
-
 fn quantize_1_bit(x: f64) -> (f64, f64) {
     if x < 128. {
         (0., x)
