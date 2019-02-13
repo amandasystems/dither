@@ -1,6 +1,4 @@
 use crate::prelude::*;
-use rand::prelude::*;
-
 #[test]
 fn test_save_and_load() {
     let img = load_test_image();
@@ -36,12 +34,4 @@ fn test_dither_no_op() {
     }
     let img = Img::new(test_img_buf, 3).unwrap();
     assert_eq!(img, NO_OP_DITHER.dither(img.clone(), no_op));
-}
-
-fn quantize_1_bit(x: f64) -> (f64, f64) {
-    if x < 128. {
-        (0., x)
-    } else {
-        (255., x - 255.)
-    }
 }
