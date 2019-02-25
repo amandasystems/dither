@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 #[derive(Debug, StructOpt, Default, PartialEq, Clone)]
 #[structopt(name = "dither")]
@@ -64,33 +64,57 @@ pub struct Opt {
 }
 
 impl Opt {
-    /// the actual output path. if opts.output exists, this is that; otherwise, this is
+    /// the [canonical][std::fs::canonicalize] input path.
+    ///
+    pub fn input_path(&self) -> Result<String> {
+        match self.input.canonicalize() {
+            Err(err) => Err(Error::input(err, &self.input)),
+            Ok(abs_input) => Ok(abs_input.to_string_lossy().to_string()),
+        }
+    }
+    /// the actual output path. if opts.output exists, this is the the [canonical][std::fs::canonicalize] version of that; otherwise, this is
     /// `"{base}_dithered_{dither}_{color}_{depth}.png"`,
-    /// where base is the input path, stripped of it's extension.
+    /// where base is the [canonicalized][std::fs::canonicalize] input path, stripped of it's extension.
     /// `$dither bunny.png --color=color --dither=atkinson --depth=2` will save to `bunny_atkinson_c_2.png`
     ///
     /// ```
     /// # use dither::prelude::*;
+    /// # use std::path::{PathBuf};
     /// let mut opt = Opt::default();
     /// opt.bit_depth=1;
-    /// opt.input = std::path::PathBuf::from("bunny.png".to_string());
-    /// assert_eq!(opt.output_path(), "bunny_dithered_floyd_bw_1.png");
+    /// opt.input = PathBuf::from("bunny.png".to_string());
+    /// let got_path = PathBuf::from(opt.output_path().unwrap());
+    /// assert_eq!("bunny_dithered_floyd_bw_1.png", got_path.file_name().unwrap().to_string_lossy());
     /// ```
-    pub fn output_path(&self) -> std::borrow::Cow<str> {
-        if let Some(output) = &self.output {
-            output.to_string_lossy()
-        } else {
-            std::borrow::Cow::Owned(format!(
-                "{base}_dithered_{dither}_{color}_{depth}.png",
-                base = self
-                    .input
-                    .file_stem()
-                    .unwrap_or_else(|| self.input.as_ref()) // no extension; use the whole path
-                    .to_string_lossy(),
-                dither = self.ditherer,
-                color = self.color_mode,
-                depth = self.bit_depth,
-            ))
+    pub fn output_path(&self) -> Result<String> {
+        match &self.output {
+            Some(path) => match path.canonicalize() {
+                Err(err) => return Err(Error::output(err, path)),
+                Ok(abs_output_path) => Ok(abs_output_path.to_string_lossy().to_string()),
+            },
+            None => {
+                // no extension; use the whole path
+                Ok(format!(
+                    "{base}_dithered_{dither}_{color}_{depth}.png",
+                    base = match self.input.canonicalize() {
+                        Err(err) => {
+                            return Err(Error::Output(
+                                (error::IOError::new(err, &self.input)).add_comment(
+                                    "could not create default output path from input path",
+                                ),
+                            ))
+                        }
+                        Ok(ref abs_path) => abs_path
+                            .file_stem()
+                            .and_then(|stem| -> Option<&Path> { Some(stem.as_ref()) })
+                            .unwrap_or(&abs_path)
+                            .to_string_lossy(),
+                    },
+                    dither = self.ditherer,
+                    color = self.color_mode,
+                    depth = self.bit_depth,
+                ))
+            }
         }
     }
 }

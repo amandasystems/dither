@@ -112,10 +112,7 @@ impl<N: From<u8>> Img<RGB<N>> {
     /// ```
     pub fn load(path: impl AsRef<Path>) -> Result<Self> {
         match image::open(&path).and_then(|img| Ok(img.to_rgb())) {
-            Err(err) => Err(Error::Input(
-                err,
-                path.as_ref().to_string_lossy().to_string(),
-            )),
+            Err(err) => Err(Error::input(err, path.as_ref())),
             Ok(img) => Ok(Img {
                 buf: img.pixels().map(|p| RGB::from(p.data)).collect(),
                 width: img.width(),
@@ -127,11 +124,11 @@ impl<N: From<u8>> Img<RGB<N>> {
 impl Img<RGB<u8>> {
     /// save an image as a `.png` or `.jpg` to the path. the path extension determines the image type.
     /// See [image::ImageBuffer::save]
-    pub fn save(self, s: String) -> Result<()> {
+    pub fn save(self, path: impl AsRef<Path>) -> Result<()> {
         let (width, height) = self.size();
         let buf = image::RgbImage::from_raw(width, height, self.raw_buf()).unwrap();
-        if let Err(err) = buf.save(&s) {
-            Err(Error::Output(err, s))
+        if let Err(err) = buf.save(path.as_ref()) {
+            Err(Error::output(err, path.as_ref())
         } else {
             Ok(())
         }
@@ -190,3 +187,4 @@ impl<'a, P> IntoIterator for &'a mut Img<P> {
         (&mut self.buf).iter_mut()
     }
 }
+

@@ -1,6 +1,4 @@
 use crate::prelude::*;
-use std::borrow::Cow;
-use std::path::PathBuf;
 #[test]
 fn test_save_and_load() {
     let img = load_test_image();

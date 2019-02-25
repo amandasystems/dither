@@ -5,6 +5,7 @@ fn main() {
     let opts = Opt::from_args();
     if let Err(err) = _main(&opts) {
         eprintln!("{}", err);
+
         std::process::exit(1)
     } else {
         std::process::exit(0)
@@ -12,6 +13,7 @@ fn main() {
 }
 
 pub fn _main(opts: &Opt) -> Result<()> {
+    let (input, output) = (opts.input_path()?, opts.output_path()?);
     if opts.verbose {
         eprintln!(
             concat!(
@@ -22,35 +24,24 @@ pub fn _main(opts: &Opt) -> Result<()> {
                 "BIT_DEPTH: {depth}\n\t",
                 "COLOR_MODE: {mode}"
             ),
-            input = match opts.input.canonicalize() {
-                Ok(input) => input.to_string_lossy().to_string(),
-                Err(err) => {
-                    return Err(Error::Input(
-                        image::ImageError::IoError(err),
-                        opts.input.to_string_lossy().to_string(),
-                    ))
-                }
-            },
-            output = opts.output_path(),
+            input = input,
+            output = output,
             dither = opts.ditherer,
             depth = opts.bit_depth,
             mode = opts.color_mode,
         );
     }
     let img: Img<RGB<f64>> =
-        Img::<RGB<u8>>::load(&opts.input)?.convert_with(|rgb| rgb.convert_with(f64::from));
+        Img::<RGB<u8>>::load(&input)?.convert_with(|rgb| rgb.convert_with(f64::from));
 
     if opts.verbose {
-        eprintln!(
-            "image loaded from \"{}\".\ndithering...",
-            opts.input.canonicalize().unwrap().to_string_lossy()
-        )
+        eprintln!("image loaded from \"{}\".\ndithering...", input)
     }
     let quantize = dither::create_quantize_n_bits_func(opts.bit_depth)?;
 
     let output_img = match opts.color_mode {
         color::Mode::CGA | color::Mode::CustomPalette { .. } if opts.bit_depth > 1 => {
-            return Err(Error::IncompatibleOptions);
+            return Err(Error::CustomPaletteIncompatibleWithDepth);
         }
 
         color::Mode::Color => opts
@@ -103,8 +94,7 @@ pub fn _main(opts: &Opt) -> Result<()> {
     if opts.verbose {
         eprintln!("dithering complete.\nsaving...");
     }
-    let s = opts.output_path().to_string();
-    let _ = output_img.save(s)?;
+    output_img.save(output)?;
     if opts.verbose {
         eprintln!("program finished");
     }

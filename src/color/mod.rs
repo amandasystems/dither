@@ -37,7 +37,7 @@ impl Default for Mode {
 /// An error handling the `--color` input option.
 pub enum Error {
     /// An unknown or unimplemented option
-    UnknownOption,
+    UnknownOption(String),
     /// An input color that's not in the range `0..=0xFF_FF_FF`
     BadPaletteColor(u32),
     /// Error parsing the palette as a hexidecimal unsigned integer
@@ -74,7 +74,7 @@ impl FromStr for Mode {
             palette if PALETTE_RE.is_match(palette) => {
                 let caps = PALETTE_RE.captures(palette).unwrap();
                 let parse = |cap| match u32::from_str_radix(cap, 16) {
-                    Ok(n) if n < 0xff_ff_ff => Ok(unsafe { RGB::from_hex(n) }),
+                    Ok(n @ 0..=0xff_ff_ff) => Ok(unsafe { RGB::from_hex(n) }),
                     Ok(n) => Err(Error::BadPaletteColor(n)),
                     Err(err) => Err(Error::CouldNotParsePalette(err)),
                 };
@@ -83,7 +83,7 @@ impl FromStr for Mode {
                     back: parse(&caps[2])?,
                 })
             }
-            _ => Err(Error::UnknownOption),
+            _ => Err(Error::UnknownOption(s.to_string())),
         }
     }
 }
@@ -91,13 +91,20 @@ impl FromStr for Mode {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Error::UnknownOption => write!(f, "unknown color option"),
-            Error::BadPaletteColor(n) => write!(
+            Error::UnknownOption(o) => writeln!(
                 f,
-                "palette colors must be between 0 and 0xffffff, but had {:x}",
+                "unknown color option 
+            \"{}\"",
+                o
+            ),
+            Error::BadPaletteColor(n) => writeln!(
+                f,
+                "palette colors must be between 0x00 and 0xffffff, but had 0x{:x}",
                 n
             ),
-            Error::CouldNotParsePalette(err) => write!(f, "could not parse palette: {}", err),
+            Error::CouldNotParsePalette(err) => {
+                writeln!(f, "could not parse specified palette: {}", err)
+            }
         }
     }
 }
@@ -108,6 +115,7 @@ impl From<std::num::ParseIntError> for Error {
 }
 #[test]
 fn test_parse() {
+    const GARBAGE: &str = "alksdalksdsj";
     let tt: Vec<(&str, Result<Mode, Error>)> = vec![
         ("bw", Ok(Mode::BlackAndWhite)),
         ("c", Ok(Mode::Color)),
@@ -123,7 +131,7 @@ fn test_parse() {
                 back: RGB(0xaa, 0, 0),
             }),
         ),
-        ("alksdalksdsj", Err(Error::UnknownOption)),
+        (GARBAGE, Err(Error::UnknownOption(GARBAGE.to_string()))),
         (
             "0x1ffffff 0x123129",
             Err(Error::BadPaletteColor(0x1_ff_ff_ff)),
