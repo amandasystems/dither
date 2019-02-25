@@ -1,12 +1,13 @@
 //! Error and result types for runtime error.
 use crate::color;
-#[derive(Debug)]
+
 /// Handling of runtime errors in main.
+#[derive(Debug)]
 pub enum Error {
-    /// An error from std::io;
-    IO(std::io::Error),
-    // An error from the [image] package.
-    Image(image::ImageError),
+    /// An error saving an image from file.
+    Output(std::io::Error, String),
+    // An error loading an image.
+    Input(image::ImageError, String),
     /// A bit depth that's not in the [range][std::ops::Range] `0..8`
     BadBitDepth(u8),
     /// An error creating a [color::Mode]
@@ -18,11 +19,11 @@ pub enum Error {
 /// Result type for [Error]
 pub type Result<T> = std::result::Result<T, Error>;
 
-impl std::fmt::Display for Error {
+impl<'a> std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Error::Image(err) => write!(f, "image library error: {}", err),
-            Error::IO(err) => write!(f, "io error: {}", err),
+            Error::Input(err, path) => write!(f, "input error loading from {}: {}",path, err ),
+            Error::Output(err, path) => write!(f, "output error saving to {}: {}", path, err),
             Error::BadBitDepth(n) => write!(f, "bit depth must be between 1 and 7, but was {}", n),
             Error::Color(err) => err.fmt(f),
             Error::IncompatibleOptions => write!(
@@ -40,14 +41,3 @@ impl From<color::Error> for Error {
 }
 
 impl std::error::Error for Error {}
-impl From<std::io::Error> for Error {
-    fn from(err: std::io::Error) -> Self {
-        Error::IO(err)
-    }
-}
-
-impl From<image::ImageError> for Error {
-    fn from(err: image::ImageError) -> Self {
-        Error::Image(err)
-    }
-}

@@ -74,24 +74,23 @@ impl Opt {
     /// let mut opt = Opt::default();
     /// opt.bit_depth=1;
     /// opt.input = std::path::PathBuf::from("bunny.png".to_string());
-    /// assert_eq!(opt.output_path().to_string_lossy(), "bunny_dithered_floyd_bw_1.png");
+    /// assert_eq!(opt.output_path(), "bunny_dithered_floyd_bw_1.png");
     /// ```
-    pub fn output_path(&self) -> std::borrow::Cow<PathBuf> {
+    pub fn output_path(&self) -> std::borrow::Cow<str> {
         if let Some(output) = &self.output {
-            std::borrow::Cow::Borrowed(output)
+            output.to_string_lossy()
         } else {
-            let output_stem = self
-                .input
-                .file_stem()
-                .unwrap_or_else(|| self.input.as_ref()) // no extension; use the whole path
-                .to_string_lossy();
-            std::borrow::Cow::Owned(std::path::PathBuf::from(format!(
+            std::borrow::Cow::Owned(format!(
                 "{base}_dithered_{dither}_{color}_{depth}.png",
-                base = output_stem,
+                base = self
+                    .input
+                    .file_stem()
+                    .unwrap_or_else(|| self.input.as_ref()) // no extension; use the whole path
+                    .to_string_lossy(),
                 dither = self.ditherer,
                 color = self.color_mode,
                 depth = self.bit_depth,
-            )))
+            ))
         }
     }
 }

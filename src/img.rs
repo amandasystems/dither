@@ -1,8 +1,7 @@
-use super::Result;
 use super::RGB;
+use super::{Error, Result};
 use std::ops::{Index, IndexMut};
 use std::path::Path;
-
 /// Image as a flat buffer of pixels; accessible by (x, y) [Index]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Img<P> {
@@ -111,24 +110,31 @@ impl<N: From<u8>> Img<RGB<N>> {
     /// let img: Img<RGB<u8>> = Img::load("bunny.png").unwrap();
     /// assert_eq!(img.size(), (620, 349));
     /// ```
-    pub fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let img = image::open(path)?.to_rgb();
-
-        Ok(Img {
-            buf: img.pixels().map(|p| RGB::from(p.data)).collect(),
-            width: img.width(),
-        })
+    pub fn load(path: impl AsRef<Path>) -> Result<Self> {
+        match image::open(&path).and_then(|img| Ok(img.to_rgb())) {
+            Err(err) => Err(Error::Input(
+                err,
+                path.as_ref().to_string_lossy().to_string(),
+            )),
+            Ok(img) => Ok(Img {
+                buf: img.pixels().map(|p| RGB::from(p.data)).collect(),
+                width: img.width(),
+            }),
+        }
     }
 }
 
 impl Img<RGB<u8>> {
     /// save an image as a `.png` or `.jpg` to the path. the path extension determines the image type.
     /// See [image::ImageBuffer::save]
-    pub fn save<P: AsRef<Path>>(self, path: P) -> Result<()> {
+    pub fn save(self, s: String) -> Result<()> {
         let (width, height) = self.size();
         let buf = image::RgbImage::from_raw(width, height, self.raw_buf()).unwrap();
-        buf.save(path)?;
-        Ok(())
+        if let Err(err) = buf.save(&s) {
+            Err(Error::Output(err, s))
+        } else {
+            Ok(())
+        }
     }
     /// the raw_buf flattens out each RGB triplet;
     /// ```

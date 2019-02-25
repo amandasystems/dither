@@ -1,9 +1,14 @@
 //! The actual runtime library.
 use dither::prelude::*;
 use structopt::StructOpt;
-fn main() -> Result<()> {
+fn main() {
     let opts = Opt::from_args();
-    _main(&opts)
+    if let Err(err) = _main(&opts) {
+        eprintln!("{}", err);
+        std::process::exit(1)
+    } else {
+        std::process::exit(0)
+    }
 }
 
 pub fn _main(opts: &Opt) -> Result<()> {
@@ -17,11 +22,19 @@ pub fn _main(opts: &Opt) -> Result<()> {
                 "BIT_DEPTH: {depth}\n\t",
                 "COLOR_MODE: {mode}"
             ),
-            input = opts.input.canonicalize()?.to_string_lossy(),
+            input = match opts.input.canonicalize() {
+                Ok(input) => input.to_string_lossy().to_string(),
+                Err(err) => {
+                    return Err(Error::Input(
+                        image::ImageError::IoError(err),
+                        opts.input.to_string_lossy().to_string(),
+                    ))
+                }
+            },
+            output = opts.output_path(),
             dither = opts.ditherer,
             depth = opts.bit_depth,
             mode = opts.color_mode,
-            output = opts.output_path().canonicalize()?.to_string_lossy(),
         );
     }
     let img: Img<RGB<f64>> =
@@ -90,7 +103,8 @@ pub fn _main(opts: &Opt) -> Result<()> {
     if opts.verbose {
         eprintln!("dithering complete.\nsaving...");
     }
-    output_img.save(opts.output_path().as_ref())?;
+    let s = opts.output_path().to_string();
+    let _ = output_img.save(s)?;
     if opts.verbose {
         eprintln!("program finished");
     }
