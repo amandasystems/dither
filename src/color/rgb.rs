@@ -111,18 +111,6 @@ impl<N: Neg<Output = N>> Neg for RGB<N> where {
     }
 }
 
-impl From<super::CGA> for RGB<u8> {
-    fn from(cga: super::CGA) -> Self {
-        // unsafe is OK; we know that all CGAs are proper RGB vals
-        unsafe { RGB::from_hex(cga.to_hex()) }
-    }
-}
-
-impl From<super::CGA> for RGB<f64> {
-    fn from(cga: super::CGA) -> Self {
-        Self::from(RGB::<u8>::from(cga))
-    }
-}
 impl From<RGB<u8>> for RGB<f64> {
     fn from(rgb: RGB<u8>) -> Self {
         rgb.convert_with(f64::from)
@@ -185,5 +173,27 @@ impl RGB<u8> {
 impl std::fmt::LowerHex for RGB<u8> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{:x}", self.clone().to_hex())
+    }
+}
+
+pub enum RGBParseError<E> {
+    BadFormat,
+    ParseComponent(E),
+}
+
+impl<E> From<E> for RGBParseError<E> {
+    fn from(err: E) -> Self {
+        RGBParseError::ParseComponent(err)
+    }
+}
+
+impl<T: std::str::FromStr> std::str::FromStr for RGB<T> {
+    type Err = RGBParseError<T::Err>;
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        let mut it = s.split_whitespace();
+        match (it.next(), it.next(), it.next()) {
+            (Some(r), Some(g), Some(b)) => Ok(RGB(r.parse()?, g.parse()?, b.parse()?)),
+            _ => Err(RGBParseError::BadFormat),
+        }
     }
 }

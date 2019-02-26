@@ -2,9 +2,9 @@
 pub use super::*;
 
 pub use self::{
-    color::{CGA, RGB},
+    color::RGB,
     ditherer::{Dither, Ditherer},
-    error::{Error, Result},
+    error::{Error, IOError, Result},
     img::Img,
     opts::Opt,
 };

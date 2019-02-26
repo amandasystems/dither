@@ -54,8 +54,7 @@ impl IOError {
             Ok(abs_path) => IOError {
                 path: abs_path
                     .file_stem()
-                    .and_then(|stem| -> Option<&Path> { Some(stem.as_ref())})
-                    .unwrap_or(&abs_path)
+                    .unwrap_or_default()
                     .to_string_lossy()
                     .to_string(),
                 err: ImageError::from(err),
@@ -86,8 +85,7 @@ impl std::fmt::Display for Error {
             Error::Output(err) =>   write!(f, "output: {}", err),
             Error::BadBitDepth(n) => write!(f, "bit depth must be between 1 and 7, but was {}", n),
             Error::Color(err) => err.fmt(f),
-            Error::CustomPaletteIncompatibleWithDepth => write!(
-                f,
+            Error::CustomPaletteIncompatibleWithDepth => f.write_str(
                 "the custom palette --color option is incompatible with the --depth option"
             ),
         }

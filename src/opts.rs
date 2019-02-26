@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use structopt::StructOpt;
 #[derive(Debug, StructOpt, Default, PartialEq, Clone)]
 #[structopt(name = "dither")]
@@ -66,7 +66,7 @@ pub struct Opt {
 impl Opt {
     /// the [canonical][std::fs::canonicalize] input path.
     ///
-    pub fn input_path(&self) -> Result<String> {
+    pub fn input_path<'a>(&'a self) -> Result<String> {
         match self.input.canonicalize() {
             Err(err) => Err(Error::input(err, &self.input)),
             Ok(abs_input) => Ok(abs_input.to_string_lossy().to_string()),
@@ -86,35 +86,29 @@ impl Opt {
     /// let got_path = PathBuf::from(opt.output_path().unwrap());
     /// assert_eq!("bunny_dithered_floyd_bw_1.png", got_path.file_name().unwrap().to_string_lossy());
     /// ```
-    pub fn output_path(&self) -> Result<String> {
-        match &self.output {
-            Some(path) => match path.canonicalize() {
-                Err(err) => return Err(Error::output(err, path)),
+    pub fn output_path<'a>(&'a self) -> Result<String> {
+        if let Some(path) = &self.output {
+            return match path.canonicalize() {
+                Err(err) => Err(Error::output(err, path)),
                 Ok(abs_output_path) => Ok(abs_output_path.to_string_lossy().to_string()),
-            },
-            None => {
-                // no extension; use the whole path
-                Ok(format!(
-                    "{base}_dithered_{dither}_{color}_{depth}.png",
-                    base = match self.input.canonicalize() {
-                        Err(err) => {
-                            return Err(Error::Output(
-                                (error::IOError::new(err, &self.input)).add_comment(
-                                    "could not create default output path from input path",
-                                ),
-                            ))
-                        }
-                        Ok(ref abs_path) => abs_path
-                            .file_stem()
-                            .and_then(|stem| -> Option<&Path> { Some(stem.as_ref()) })
-                            .unwrap_or(&abs_path)
-                            .to_string_lossy(),
-                    },
-                    dither = self.ditherer,
-                    color = self.color_mode,
-                    depth = self.bit_depth,
-                ))
-            }
+            };
         }
+
+        let abs_path = match self.input.canonicalize() {
+            Err(err) => {
+                return Err(Error::Output(IOError::new(err, &self.input).add_comment(
+                    "could not create default output path from input path",
+                )))
+            }
+            Ok(abs_path) => abs_path,
+        };
+        let path = format!(
+            "{base}_dithered_{dither}_{color}_{depth}.png",
+            base = abs_path.file_stem().unwrap_or_default().to_string_lossy(),
+            dither = self.ditherer,
+            color = self.color_mode,
+            depth = self.bit_depth,
+        );
+        Ok(path)
     }
 }

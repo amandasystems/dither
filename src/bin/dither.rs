@@ -39,8 +39,10 @@ pub fn _main(opts: &Opt) -> Result<()> {
     }
     let quantize = dither::create_quantize_n_bits_func(opts.bit_depth)?;
 
-    let output_img = match opts.color_mode {
-        color::Mode::CGA | color::Mode::CustomPalette { .. } if opts.bit_depth > 1 => {
+    let output_img = match &opts.color_mode {
+        color::Mode::KnownPalette { .. } | color::Mode::CustomPalette { .. }
+            if opts.bit_depth > 1 =>
+        {
             return Err(Error::CustomPaletteIncompatibleWithDepth);
         }
 
@@ -49,9 +51,13 @@ pub fn _main(opts: &Opt) -> Result<()> {
             .dither(img, RGB::map_across(quantize))
             .convert_with(|rgb| rgb.convert_with(clamp_f64_to_u8)),
 
-        color::Mode::CGA => opts
+        color::Mode::KnownPalette { palette, .. } => opts
             .ditherer
-            .dither(img, CGA::quantize)
+            .dither(img, color::quantize_palette(palette))
+            .convert_with(|rgb| rgb.convert_with(clamp_f64_to_u8)),
+        color::Mode::CustomPalette(palette) => opts
+            .ditherer
+            .dither(img, color::quantize_palette(palette))
             .convert_with(|rgb| rgb.convert_with(clamp_f64_to_u8)),
 
         color::Mode::BlackAndWhite => {
@@ -63,11 +69,11 @@ pub fn _main(opts: &Opt) -> Result<()> {
 
         color::Mode::SingleColor(color) => {
             if opts.verbose {
-                eprintln!("single_color mode: {}", color)
+                eprintln!("single_color mode: {:x}", color)
             }
 
             let bw_img = img.convert_with(|rgb| rgb.to_chroma_corrected_black_and_white());
-            let RGB(r, g, b) = RGB::<u8>::from(color);
+            let RGB(r, g, b) = RGB::<u8>::from(*color);
 
             opts.ditherer
                 .dither(bw_img, quantize)
@@ -78,17 +84,6 @@ pub fn _main(opts: &Opt) -> Result<()> {
                         clamp_f64_to_u8(f64::from(b) / 255. * x),
                     )
                 })
-        }
-
-        color::Mode::CustomPalette { front, back } => {
-            if opts.verbose {
-                eprintln!("cutom palette: front: {:?}, back {:?} ", &front, &back);
-            }
-            let bw_img = img.convert_with(|rgb| rgb.to_chroma_corrected_black_and_white());
-            opts.ditherer
-                .dither(bw_img, quantize)
-                .convert_with(create_convert_quantized_to_palette_func(front, back))
-                .convert_with(|rgb| rgb.convert_with(clamp_f64_to_u8))
         }
     };
     if opts.verbose {
