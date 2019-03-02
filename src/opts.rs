@@ -72,19 +72,19 @@ impl Opt {
             Ok(abs_input) => Ok(abs_input.to_string_lossy().to_string()),
         }
     }
-    /// the actual output path. if opts.output exists, this is the the [canonical][std::fs::canonicalize] version of that; otherwise, this is
+    /// the actual output path. if opts.output exists, this is that, otherwise, this is
     /// `"{base}_dithered_{dither}_{color}_{depth}.png"`,
     /// where base is the [canonicalized][std::fs::canonicalize] input path, stripped of it's extension.
     /// `$dither bunny.png --color=color --dither=atkinson --depth=2` will save to `bunny_atkinson_c_2.png`
     ///
     /// ```
     /// # use dither::prelude::*;
-    /// # use std::path::{PathBuf};
+    /// # use std::path::{PathBuf,Path};
     /// let mut opt = Opt::default();
     /// opt.bit_depth=1;
     /// opt.input = PathBuf::from("bunny.png".to_string());
-    /// let got_path = PathBuf::from(opt.output_path().unwrap());
-    /// assert_eq!("bunny_dithered_floyd_bw_1.png", got_path.file_name().unwrap().to_string_lossy());
+    /// let got_path = opt.output_path().unwrap();
+    /// assert_eq!("bunny_dithered_floyd_bw_1.png", Path::file_name(got_path.as_ref().as_ref()).unwrap().to_string_lossy());
     /// ```
     pub fn output_path<'a>(&'a self) -> Result<std::borrow::Cow<'a, str>> {
         if let Some(path) = &self.output {
