@@ -27,15 +27,19 @@ pub struct IOError {
     comment: Option<&'static str>,
 }
 impl Error {
-    pub fn input<E>(err: E, path: &Path) -> Self     where
-        ImageError: From<E>{
-            Error::Input(IOError::new(err, path))
-        }
-    pub fn output<E>(err: E, path: &Path) -> Self where ImageError: From<E> {
+    pub fn input<E>(err: E, path: &Path) -> Self
+    where
+        ImageError: From<E>,
+    {
+        Error::Input(IOError::new(err, path))
+    }
+    pub fn output<E>(err: E, path: &Path) -> Self
+    where
+        ImageError: From<E>,
+    {
         Error::Output(IOError::new(err, path))
     }
 }
-
 
 fn to_lossy_owned(path: impl AsRef<Path>) -> String {
     path.as_ref().to_string_lossy().to_string()
@@ -74,7 +78,11 @@ impl std::fmt::Display for IOError {
         let IOError { path, err, comment } = self;
         write!(
             f,
-            "on path \"{}\": {}, {}", path, err,  if let Some(s) = comment { s } else { "" }
+            "on path \"{}\": {}, {}",
+            path,
+            err,
+            if let Some(s) = comment { s } else { "" }
+        )
     }
 }
 
@@ -82,11 +90,11 @@ impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Error::Input(err) => write!(f, "input: {}", err),
-            Error::Output(err) =>   write!(f, "output: {}", err),
+            Error::Output(err) => write!(f, "output: {}", err),
             Error::BadBitDepth(n) => write!(f, "bit depth must be between 1 and 7, but was {}", n),
             Error::Color(err) => err.fmt(f),
             Error::CustomPaletteIncompatibleWithDepth => f.write_str(
-                "the custom palette --color option is incompatible with the --depth option"
+                "the custom palette --color option is incompatible with the --depth option",
             ),
         }
     }

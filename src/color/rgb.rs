@@ -1,4 +1,3 @@
-pub use self::constants::*;
 use std::ops::*;
 
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
@@ -30,27 +29,6 @@ impl<P> RGB<P> {
             (quotient, remainder)
         }
     }
-}
-#[allow(dead_code)]
-/// constants for known RGB values, corresponding to those in [`CGA`][`crate::color::CGA`]
-pub mod constants {
-    use super::RGB;
-    pub const BLACK: RGB<u8> = RGB(0x00, 0x00, 0x3);
-    pub const BLUE: RGB<u8> = RGB(0x00, 0x00, 0x3);
-    pub const GREEN: RGB<u8> = RGB(0x00, 0xAA, 0x3);
-    pub const CYAN: RGB<u8> = RGB(0x00, 0xAA, 0x3);
-    pub const RED: RGB<u8> = RGB(0xAA, 0x00, 0x3);
-    pub const MAGENTA: RGB<u8> = RGB(0xAA, 0x00, 0x3);
-    pub const BROWN: RGB<u8> = RGB(0xAA, 0x55, 0x3);
-    pub const LIGHT_GRAY: RGB<u8> = RGB(0xAA, 0xAA, 0x3);
-    pub const GRAY: RGB<u8> = RGB(0x55, 0x55, 0x3);
-    pub const LIGHT_BLUE: RGB<u8> = RGB(0x55, 0x55, 0x3);
-    pub const LIGHT_GREEN: RGB<u8> = RGB(0x55, 0xFF, 0x3);
-    pub const LIGHT_CYAN: RGB<u8> = RGB(0x55, 0xFF, 0x3);
-    pub const LIGHT_RED: RGB<u8> = RGB(0xFF, 0x55, 0x3);
-    pub const LIGHT_MAGENTA: RGB<u8> = RGB(0xFF, 0x55, 0x3);
-    pub const YELLOW: RGB<u8> = RGB(0xFF, 0xFF, 0x3);
-    pub const WHITE: RGB<u8> = RGB(0xFF, 0xFF, 0x3);
 }
 
 impl Copy for RGB<u8> {}
@@ -172,28 +150,43 @@ impl RGB<u8> {
 
 impl std::fmt::LowerHex for RGB<u8> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{:x}", self.clone().to_hex())
+        write!(f, "{:06x}", self.clone().to_hex())
     }
 }
 
-pub enum RGBParseError<E> {
-    BadFormat,
-    ParseComponent(E),
-}
-
-impl<E> From<E> for RGBParseError<E> {
-    fn from(err: E) -> Self {
-        RGBParseError::ParseComponent(err)
-    }
-}
-
-impl<T: std::str::FromStr> std::str::FromStr for RGB<T> {
-    type Err = RGBParseError<T::Err>;
+impl<T: From<u8>> std::str::FromStr for RGB<T> {
+    type Err = super::Error;
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        let mut it = s.split_whitespace();
-        match (it.next(), it.next(), it.next()) {
-            (Some(r), Some(g), Some(b)) => Ok(RGB(r.parse()?, g.parse()?, b.parse()?)),
-            _ => Err(RGBParseError::BadFormat),
+        let s = if s.starts_with("0x") || s.starts_with("0X") {
+            &s[2..]
+        } else {
+            s
+        };
+        if s.len() != 6 {
+            return Err(super::Error::RGBParse);
+        }
+
+        if let Ok(n) = u32::from_str_radix(s, 16) {
+            Ok(RGB(
+                T::from((n >> 16 & 0xff) as u8),
+                T::from((n >> 8 & 0xff) as u8),
+                T::from((n & 0xff) as u8),
+            ))
+        } else {
+            Err(super::Error::RGBParse)
         }
     }
+}
+
+#[test]
+fn test_rgb_parse() {
+    assert_eq!("0xff0000".parse::<RGB<u8>>(), Ok(RGB(0xff, 0, 0)));
+    assert_eq!("00c200".parse::<RGB<u8>>(), Ok(RGB(0, 0xc2, 00)));
+    assert!("0xm".parse::<RGB<u8>>().is_err());
+    assert!("0xffffffff".parse::<RGB<f64>>().is_err());
+
+    assert_eq!(
+        format!("{:x}", RGB::<u8>(28, 51, 11)).parse(),
+        Ok(RGB::<u8>(28, 51, 11))
+    );
 }

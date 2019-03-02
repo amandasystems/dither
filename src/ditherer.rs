@@ -133,7 +133,7 @@ pub const BURKES: Ditherer = Ditherer {
 pub const FLOYD_STEINBERG: Ditherer = Ditherer {
     name: Some("floyd"),
     div: 16.,
-    offsets: &[(1, 0, 7.), (-1, 1, 7.), (0, 1, 5.), (1, 1, 1.)],
+    offsets: &[(1, 0, 7.), (-1, 1, 3.), (0, 1, 5.), (1, 1, 1.)],
 };
 
 /// Stucki dithering. `div=42`

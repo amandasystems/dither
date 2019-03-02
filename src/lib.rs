@@ -4,7 +4,8 @@
 //!
 //! Inspired by: <http://www.tannerhelland.com/4660/dithering-eleven-algorithms-source-code/>
 //! and the game "Return of the Obra Dinn"
-
+#[macro_use]
+extern crate lazy_static;
 
 pub mod color;
 pub mod ditherer;

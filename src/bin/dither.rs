@@ -39,10 +39,8 @@ pub fn _main(opts: &Opt) -> Result<()> {
     }
     let quantize = dither::create_quantize_n_bits_func(opts.bit_depth)?;
 
-    let output_img = match &opts.color_mode {
-        color::Mode::KnownPalette { .. } | color::Mode::CustomPalette { .. }
-            if opts.bit_depth > 1 =>
-        {
+    let output_img = match &opts.color_mode { 
+        color::Mode::Palette { .. } if opts.bit_depth > 1 => {
             return Err(Error::CustomPaletteIncompatibleWithDepth);
         }
 
@@ -51,11 +49,7 @@ pub fn _main(opts: &Opt) -> Result<()> {
             .dither(img, RGB::map_across(quantize))
             .convert_with(|rgb| rgb.convert_with(clamp_f64_to_u8)),
 
-        color::Mode::KnownPalette { palette, .. } => opts
-            .ditherer
-            .dither(img, color::quantize_palette(palette))
-            .convert_with(|rgb| rgb.convert_with(clamp_f64_to_u8)),
-        color::Mode::CustomPalette(palette) => opts
+        color::Mode::Palette { palette, .. } => opts
             .ditherer
             .dither(img, color::quantize_palette(palette))
             .convert_with(|rgb| rgb.convert_with(clamp_f64_to_u8)),
@@ -89,7 +83,7 @@ pub fn _main(opts: &Opt) -> Result<()> {
     if opts.verbose {
         eprintln!("dithering complete.\nsaving...");
     }
-    output_img.save(output)?;
+    output_img.save(&output)?;
     if opts.verbose {
         eprintln!("program finished");
     }

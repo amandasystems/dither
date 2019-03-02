@@ -5,9 +5,7 @@ fn test_save_and_load() {
     let mut output = std::env::current_dir().unwrap();
 
     output.push("save_load_test.png");
-    img.clone()
-        .save(output.to_string_lossy().to_string())
-        .unwrap();
+    img.clone().save(&output.to_string_lossy()).unwrap();
 
     assert_eq!(img, Img::load(&output).unwrap());
     std::fs::remove_file(output).unwrap();

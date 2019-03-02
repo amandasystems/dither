@@ -86,19 +86,16 @@ impl Opt {
     /// let got_path = PathBuf::from(opt.output_path().unwrap());
     /// assert_eq!("bunny_dithered_floyd_bw_1.png", got_path.file_name().unwrap().to_string_lossy());
     /// ```
-    pub fn output_path<'a>(&'a self) -> Result<String> {
+    pub fn output_path<'a>(&'a self) -> Result<std::borrow::Cow<'a, str>> {
         if let Some(path) = &self.output {
-            return match path.canonicalize() {
-                Err(err) => Err(Error::output(err, path)),
-                Ok(abs_output_path) => Ok(abs_output_path.to_string_lossy().to_string()),
-            };
+            return Ok(path.to_string_lossy());
         }
 
         let abs_path = match self.input.canonicalize() {
             Err(err) => {
                 return Err(Error::Output(IOError::new(err, &self.input).add_comment(
                     "could not create default output path from input path",
-                )))
+                )));
             }
             Ok(abs_path) => abs_path,
         };
@@ -109,6 +106,6 @@ impl Opt {
             color = self.color_mode,
             depth = self.bit_depth,
         );
-        Ok(path)
+        Ok(std::borrow::Cow::Owned(path))
     }
 }

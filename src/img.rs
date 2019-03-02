@@ -124,11 +124,11 @@ impl<N: From<u8>> Img<RGB<N>> {
 impl Img<RGB<u8>> {
     /// save an image as a `.png` or `.jpg` to the path. the path extension determines the image type.
     /// See [image::ImageBuffer::save]
-    pub fn save(self, path: impl AsRef<Path>) -> Result<()> {
+    pub fn save(self, path: &str) -> Result<()> {
         let (width, height) = self.size();
         let buf = image::RgbImage::from_raw(width, height, self.raw_buf()).unwrap();
-        if let Err(err) = buf.save(path.as_ref()) {
-            Err(Error::output(err, path.as_ref())
+        if let Err(err) = buf.save(path) {
+            Err(Error::output(err, path.as_ref()))
         } else {
             Ok(())
         }
@@ -187,4 +187,3 @@ impl<'a, P> IntoIterator for &'a mut Img<P> {
         (&mut self.buf).iter_mut()
     }
 }
-
