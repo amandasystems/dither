@@ -6,9 +6,6 @@ pub type Palette = [RGB<u8>];
 pub use self::rgb::RGB;
 
 use std::borrow::Cow;
-use std::fs;
-use std::io;
-use std::io::prelude::*;
 use std::path::Path;
 use std::str::FromStr;
 #[derive(Clone, Debug, PartialEq, Eq)]
