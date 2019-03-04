@@ -128,7 +128,7 @@ impl Img<RGB<u8>> {
         let (width, height) = self.size();
         let buf = image::RgbImage::from_raw(width, height, self.raw_buf()).unwrap();
         if let Err(err) = buf.save(path) {
-            Err(Error::output(err, path.as_ref()))
+            Err(Error::output(err, path))
         } else {
             Ok(())
         }

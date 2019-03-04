@@ -2,7 +2,7 @@
 pub use super::*;
 
 pub use self::{
-    color::RGB,
+    color::{palette::Palette, RGB},
     ditherer::{Dither, Ditherer},
     error::{Error, IOError, Result},
     img::Img,

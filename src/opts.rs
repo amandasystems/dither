@@ -41,9 +41,10 @@ pub struct Opt {
 
     /// Color mode to use.
     /// Options are
-    /// - bw (default)
-    /// - color
+    /// - bw => grayscale with the specified bit depth. (default)
+    /// - color => color mode with the specified bit depth.
     /// - cga => load the cga palette. equivalent to "cga.plt".
+    /// - crayon => load the crayon palette. equivalent to "crayon.plt"
     /// - $COLOR => single-color mode. options are
     /// - $FILENAME" => load palette from file, listed as line-separated RGB values. see "cga.plt" and the readme for more information on palette files.
     #[structopt(short = "c", long = "color", default_value = "bw")]
@@ -51,6 +52,13 @@ pub struct Opt {
 }
 
 impl Opt {
+    /// the [canonicalized][std::fs::canonicalize] input path
+    pub fn input_path<'a>(&'a self) -> Result<PathBuf> {
+        match self.input.canonicalize() {
+            Err(err) => return Err(Error::Input(IOError::new(err, &self.input))),
+            Ok(abs_path) => Ok(abs_path),
+        }
+    }
     /// the actual output path. if opts.output exists, this is that, otherwise, this is
     /// `"{base}_dithered_{dither}_{color}_{depth}.png"`,
     /// where base is the [canonicalized][std::fs::canonicalize] input path, stripped of it's extension.
@@ -66,12 +74,6 @@ impl Opt {
     /// assert_eq!("bunny_dithered_floyd_bw_1.png", Path::file_name(got_path.as_ref().as_ref()).unwrap().to_string_lossy());
     /// ```
     ///
-    pub fn input_path<'a>(&'a self) -> Result<PathBuf> {
-        match self.input.canonicalize() {
-            Err(err) => return Err(Error::Input(IOError::new(err, &self.input))),
-            Ok(abs_path) => Ok(abs_path),
-        }
-    }
     pub fn output_path<'a>(&'a self) -> Result<Cow<'a, Path>> {
         if let Some(path) = &self.output {
             return Ok(Cow::Borrowed(&path));

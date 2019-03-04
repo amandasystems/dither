@@ -1,6 +1,11 @@
 pub type Palette = [RGB<u8>];
-use super::Error;
-use crate::color::{cga, Mode, RGB};
+use super::{Error, RGB};
+/// built-in CGA palette; equivalent to cga.plt
+pub mod cga;
+/// built-in CRAYON palette; equivalent to crayon.plt
+pub mod crayon;
+mod tests;
+
 /// parse a palette, specified as 6-digit hexidecimal RGB values (w/ optional 0x prefix) separated by newlines.
 /// lines consisting entirely of whitespace or starting with `//` are ignored.
 /// /// don't forget to include at least two colors (probably including one of WHITE (0xffffff) or BLACK(0xffffff))
@@ -11,6 +16,8 @@ use crate::color::{cga, Mode, RGB};
 /// let input = "
 /// // BLACK
 /// 0x000000
+/// // whitespace lines are ignored
+/// \t\t\t       \t\t\t\t
 /// // RED
 /// 0xFF0000
 /// // GREEN
@@ -33,67 +40,6 @@ pub fn parse<T: std::iter::FromIterator<RGB<u8>>>(s: &str) -> Result<T, Error> {
     } else {
         filtered.into_iter().map(RGB::<u8>::from_str).collect()
     }
-}
-
-#[test]
-fn test_parse() {
-    use std::collections::HashSet;
-    use std::fs::File;
-    use std::io::prelude::*;
-    use std::path::{Path, PathBuf};
-    const GARBAGE: &str = "ASDASLKJAS";
-
-    let tt: Vec<(&str, Mode)> = vec![
-        ("bw", Mode::BlackAndWhite),
-        ("c", Mode::Color),
-        ("color", Mode::Color),
-        ("RED", Mode::SingleColor(cga::RED)),
-        ("blue", Mode::SingleColor(cga::BLUE)),
-        ("LigHT_CYAN", Mode::SingleColor(cga::LIGHT_CYAN)),
-        ("cga", Mode::CGA),
-        ("cRaYoN", Mode::CRAYON),
-    ];
-    for (s, want) in tt {
-        assert_eq!(s.parse::<Mode>().unwrap(), want);
-    }
-    assert!(GARBAGE.parse::<Mode>().is_err());
-
-    let mut input = std::env::current_dir().unwrap();
-    input.push("temp_cga.plt");
-
-    let mut file = File::create(&input).unwrap();
-    write!(
-        file,
-        "
-0x000000
-0x0000AA
-0x00AA00
-0x00AAAA
-0xAA00AA
-0xAA0000
-0xAA5500
-0xAAAAAA
-0x555555
-0x5555FF
-0x55FF55
-0x55FFFF
-0xFF5555
-0xFF55FF
-0xFFFF55
-0xFFFFFF"
-    )
-    .unwrap();
-    let want_palette: HashSet<RGB<u8>> = cga::ALL.iter().cloned().collect();
-    if let Mode::Palette {
-        palette: got_palette,
-        ..
-    } = input.to_string_lossy().parse::<Mode>().unwrap()
-    {
-        assert_eq!(want_palette, got_palette.iter().cloned().collect());
-    } else {
-        panic!("bad")
-    }
-    std::fs::remove_file(input).unwrap();
 }
 /// create a quantization function from the specified palette, returning the pair
 /// `(nearest_neighbor, dist_from_neighbor)`

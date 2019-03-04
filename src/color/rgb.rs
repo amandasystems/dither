@@ -73,7 +73,7 @@ impl<S: Div<Output = S> + Copy> Div<S> for RGB<S> {
     }
 }
 
-impl<S: Rem<Output = S> + Copy> Rem<S> for RGB<S> where {
+impl<S: Rem<Output = S> + Copy> Rem<S> for RGB<S> {
     type Output = Self;
     fn rem(self, s: S) -> Self {
         self.convert_with(|c| c % s)
@@ -82,7 +82,7 @@ impl<S: Rem<Output = S> + Copy> Rem<S> for RGB<S> where {
 
 // unary ops
 
-impl<N: Neg<Output = N>> Neg for RGB<N> where {
+impl<N: Neg<Output = N>> Neg for RGB<N> {
     type Output = Self;
     fn neg(self) -> Self {
         self.convert_with(|c| -c)
@@ -95,20 +95,13 @@ impl From<RGB<u8>> for RGB<f64> {
     }
 }
 
-impl<N, M> From<[N; 3]> for RGB<M>
-where
-    N: Copy,
-    M: From<N>,
-{
+impl<N: Copy, M: From<N>> From<[N; 3]> for RGB<M> {
     fn from(a: [N; 3]) -> Self {
         RGB(a[0], a[1], a[2]).convert_with(M::from)
     }
 }
 
-impl<N, M> From<(N, N, N)> for RGB<M>
-where
-    M: From<N>,
-{
+impl<N, M: From<N>> From<(N, N, N)> for RGB<M> {
     fn from((r, g, b): (N, N, N)) -> Self {
         RGB(r, g, b).convert_with(M::from)
     }

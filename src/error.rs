@@ -1,7 +1,7 @@
 //! Error and result types for runtime error.
 use crate::prelude::*;
 use image::ImageError;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 /// Handling of runtime errors in main.
 #[derive(Debug)]
 pub enum Error {
@@ -23,55 +23,30 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 pub struct IOError {
     err: ImageError,
-    path: String,
-    comment: Option<&'static str>,
+    path: PathBuf,
 }
 impl Error {
-    pub fn input<E>(err: E, path: &Path) -> Self
-    where
-        ImageError: From<E>,
-    {
+    pub fn input(err: impl Into<ImageError>, path: impl AsRef<Path>) -> Self {
         Error::Input(IOError::new(err, path))
     }
-    pub fn output<E>(err: E, path: &Path) -> Self
-    where
-        ImageError: From<E>,
-    {
+    pub fn output(err: impl Into<ImageError>, path: impl AsRef<Path>) -> Self {
         Error::Output(IOError::new(err, path))
     }
 }
 
-fn to_lossy_owned(path: impl AsRef<Path>) -> String {
-    path.as_ref().to_string_lossy().to_string()
-}
 impl IOError {
-    pub fn new<E>(err: E, path: &Path) -> Self
-    where
-        ImageError: From<E>,
-    {
+    pub fn new(err: impl Into<ImageError>, path: impl AsRef<Path>) -> Self {
         IOError {
-            path: to_lossy_owned(path),
-            err: ImageError::from(err),
-            comment: None,
+            path: path.as_ref().to_owned(),
+            err: err.into(),
         }
-    }
-
-    pub fn add_comment(mut self, comment: &'static str) -> Self {
-        self.comment = Some(comment);
-        self
     }
 }
 
 impl std::fmt::Display for IOError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let IOError { path, err, comment } = self;
-        write!(
-            f,
-            "on path \"{}\": {}, {}",
-            path,
-            err,
-            if let Some(s) = comment { s } else { "" }
-        )
+        let IOError { path, err } = self;
+        write!(f, "on path \"{}\": {}", path.display(), err)
     }
 }
 

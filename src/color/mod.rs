@@ -3,12 +3,9 @@
 mod rgb;
 
 pub use palette::Palette;
+use palette::{cga, crayon};
 pub use rgb::RGB;
 
-/// built-in CGA palette; equivalent to cga.plt
-pub mod cga;
-/// built-in CRAYON palette; equivalent to crayon.plt
-pub mod crayon;
 pub mod palette;
 use std::borrow::Cow;
 use std::path::Path;

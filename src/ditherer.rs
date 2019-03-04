@@ -47,7 +47,8 @@ impl<'a> Ditherer<'a> {
 
 impl<'a, P> Dither<P> for Ditherer<'a>
 where
-    P: Add<Output = P> + Mul<f64, Output = P> + Div<f64, Output = P> + Clone + Default,
+    P: Add<Output = P> + Clone + Default,           // vec addition
+    P: Mul<f64, Output = P> + Div<f64, Output = P>, // scalar multiplication
 {
     /// dither an image using the specified offsets and divisor.
     /// `P` is the type of pixel; in practice, it is either [f64] or [RGB<f64]

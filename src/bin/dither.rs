@@ -25,8 +25,8 @@ pub fn _main(opts: &Opt) -> Result<()> {
                 "BIT_DEPTH: {depth}\n\t",
                 "COLOR_MODE: {mode}"
             ),
-            input = input.to_string_lossy(),
-            output = output.to_string_lossy(),
+            input = input.display(),
+            output = output.display(),
             dither = opts.ditherer,
             depth = opts.bit_depth,
             mode = opts.color_mode,
@@ -36,10 +36,7 @@ pub fn _main(opts: &Opt) -> Result<()> {
         Img::<RGB<u8>>::load(&input)?.convert_with(|rgb| rgb.convert_with(f64::from));
 
     if opts.verbose {
-        eprintln!(
-            "image loaded from \"{}\".\ndithering...",
-            input.to_string_lossy()
-        )
+        eprintln!("image loaded from \"{}\".\ndithering...", input.display())
     }
     let quantize = dither::create_quantize_n_bits_func(opts.bit_depth)?;
 
