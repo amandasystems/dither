@@ -1,4 +1,5 @@
 //! The actual runtime library.
+use color::palette;
 use dither::prelude::*;
 use structopt::StructOpt;
 fn main() {
@@ -52,9 +53,9 @@ pub fn _main(opts: &Opt) -> Result<()> {
             .dither(img, RGB::map_across(quantize))
             .convert_with(|rgb| rgb.convert_with(clamp_f64_to_u8)),
 
-        color::Mode::Palette { palette, .. } => opts
+        color::Mode::Palette { palette: p, .. } => opts
             .ditherer
-            .dither(img, color::quantize_palette(palette))
+            .dither(img, palette::quantize(p))
             .convert_with(|rgb| rgb.convert_with(clamp_f64_to_u8)),
 
         color::Mode::BlackAndWhite => {
