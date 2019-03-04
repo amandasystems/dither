@@ -1,12 +1,17 @@
-# Dither
+# Dither 1.3.2
 
 Inspired by: <http://www.tannerhelland.com/4660/dithering-eleven-algorithms-source-code/>
-
-- no dithering: ![bunny_no_dither](bunny.png)
-- one_bit black and white floyd_steinberg dithering ![bunny_floyd_bw_1](bunny_dithered_floyd_bw_1.png)
-- CGA 16-color mode, sierra 3 dithering: ![bunny_sierra_cga](bunny_dithered_sierra3_cga_1.png)
+- [crate](https://crates.io/crates/dither)
+- [documentation](https://docs.rs/dither/1.3.1/dither/)
+- [repository](https://gitlab.com/efronlicht/dither)
 
 ## License: MIT
+
+
+## installation
+```bash
+cargo install dither
+```
 
 ## CLI help:
 
@@ -17,18 +22,20 @@ dither --help
 ## usage
 
 ```bash
-dither INPUT [OUTPUT] [-v] [--dither] [--color] [--depth]
+dither INPUT [OUTPUT] [-v] [--dither="floyd"] [--color="bw"] [--depth="1"] [--help]
 ```
 
-example:
+## examples
 
-```bash
-# dither "bunny.ong", output to green_bunny.png, using the atkinson dithering algoirthm, and using two bits of depth for shades of GREEN, emitting debug info to stderr.
-dither bunny.png green_bunny.png --dither=atkinson --color=GREEN --depth=2 -v
+![bunny](bunny.png)
 
-# dither "bunny.png", output to bunny_crayon.jpg, using the sierra 3 dithering algorithm, and loading it's color palette from crayon.plt
-dither bunny.png bunny_crayon.jpg --dither=sierra3 --color="crayon.plt"
-```
+    dither bunny.png burkes.png --dither=burkes
+
+![burkes](burkes.png)
+
+    dither bunny.png crayon.png --color=crayon
+![crayon](crayon.png)
+
 
 ## args
 
@@ -52,6 +59,13 @@ The color mode to use. Default is "bw" (black and white). Color mode to use.
 
 black and white mode (grayscale in higher birt depths)
 
+#### "crayon"
+
+use the crayon color palette. see "crayon.plt" for details.
+
+### "cga"
+
+use the [cga](https://en.wikipedia.org/wiki/Color_Graphics_Adapter) color palette. see the wikipedia article or "cga.plt" for details.
 #### $COLOR
 
 single-color mode. options are
@@ -90,10 +104,16 @@ load a palette from file. palettes are specified as a list of two or more newlin
 
 The type of ditherer to use. Available options are
 
-- `"floyd"`, `"steinberg"`, `"floydsteinberg"` _(default, floyd-steinberg dithering)_
+- `"floyd"`, `"steinberg"`, `"floydsteinberg"` 
+_(default, floyd-steinberg dithering)_
+
 - `"atkinson"`,
+
 - `"stucki"`,
+![stucki](bunny_dithered_stucki_bw_1.png)
 - `"burkes"`,
+
+
 - `"jarvis"`, `"judice"`, `ninke"` _Jarvis-Judice-Ninke dithering_
 - `"sierra"`, `"sierra3"` _Sierra_ dithering
 
@@ -104,3 +124,7 @@ Verbose debug output to stderr
 ### `--depth`
 
 Default 1\. Bit depth should be an unsigned integer between 1 and 7\. The number of bits to compress each channel to. This option only works with the options `--color=$COLOR, --color=bw, --color=color`
+
+
+## examples
+
