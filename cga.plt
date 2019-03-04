@@ -1,5 +1,4 @@
-// the sixteen colors of ibm's 1981 Color Graphics Adapter: 
-// https://en.wikipedia.org/wiki/Color_Graphics_Adapter
+
 0x000000
 0x0000AA
 0x00AA00

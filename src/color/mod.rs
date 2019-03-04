@@ -225,10 +225,11 @@ fn test_parse() {
     }
     assert!(GARBAGE.parse::<Mode>().is_err());
 
-    let mut temppath = std::env::temp_dir();
-    dbg!(std::env::current_dir()).unwrap();
-    temppath.push("cga.plt");
-    let mut file = File::create(&temppath).unwrap();
+    let mut input = std::env::current_dir().unwrap();
+    input.push("cga.plt");
+
+    dbg!(&input);
+    let mut file = File::create(&input).unwrap();
     write!(
         file,
         "
@@ -254,7 +255,7 @@ fn test_parse() {
     if let Mode::Palette {
         palette: got_palette,
         ..
-    } = temppath.to_string_lossy().parse::<Mode>().unwrap()
+    } = input.to_string_lossy().parse::<Mode>().unwrap()
     {
         assert_eq!(want_palette, got_palette.iter().cloned().collect());
     } else {
