@@ -124,7 +124,7 @@ impl<N: From<u8>> Img<RGB<N>> {
 impl Img<RGB<u8>> {
     /// save an image as a `.png` or `.jpg` to the path. the path extension determines the image type.
     /// See [image::ImageBuffer::save]
-    pub fn save(self, path: &str) -> Result<()> {
+    pub fn save(self, path: &Path) -> Result<()> {
         let (width, height) = self.size();
         let buf = image::RgbImage::from_raw(width, height, self.raw_buf()).unwrap();
         if let Err(err) = buf.save(path) {

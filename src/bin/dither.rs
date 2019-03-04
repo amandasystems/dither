@@ -25,7 +25,7 @@ pub fn _main(opts: &Opt) -> Result<()> {
                 "COLOR_MODE: {mode}"
             ),
             input = input.to_string_lossy(),
-            output = output,
+            output = output.to_string_lossy(),
             dither = opts.ditherer,
             depth = opts.bit_depth,
             mode = opts.color_mode,

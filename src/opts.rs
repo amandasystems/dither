@@ -1,5 +1,6 @@
 use crate::prelude::*;
-use std::path::PathBuf;
+use std::borrow::Cow;
+use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 #[derive(Debug, StructOpt, Default, PartialEq, Clone)]
 #[structopt(name = "dither")]
@@ -65,12 +66,15 @@ impl Opt {
     /// assert_eq!("bunny_dithered_floyd_bw_1.png", Path::file_name(got_path.as_ref().as_ref()).unwrap().to_string_lossy());
     /// ```
     ///
-    pub fn input_path<'a>(&'a self) -> std::borrow::Cow<'a, str> {
-        self.input.to_string_lossy()
+    pub fn input_path<'a>(&'a self) -> Result<PathBuf> {
+        match self.input.canonicalize() {
+            Err(err) => return Err(Error::Input(IOError::new(err, &self.input))),
+            Ok(abs_path) => Ok(abs_path),
+        }
     }
-    pub fn output_path<'a>(&'a self) -> Result<std::borrow::Cow<'a, str>> {
+    pub fn output_path<'a>(&'a self) -> Result<Cow<'a, Path>> {
         if let Some(path) = &self.output {
-            return Ok(path.to_string_lossy());
+            return Ok(Cow::Borrowed(&path));
         }
 
         let abs_path = match self.input.canonicalize() {
@@ -84,6 +88,6 @@ impl Opt {
             color = self.color_mode,
             depth = self.bit_depth,
         );
-        Ok(std::borrow::Cow::Owned(path))
+        Ok(Cow::Owned(PathBuf::from(path)))
     }
 }
