@@ -1,6 +1,6 @@
 [package]
 name = "dither"
-version = "1.3.1"
+version = "1.3.2"
 authors = ["Efron Licht <efron.python@gmail.com>"]
 edition = "2018"
 license = "MIT"
