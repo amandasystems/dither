@@ -173,7 +173,7 @@ impl<'a> FromStr for Mode {
             "LIGHT_RED" => Mode::SingleColor(cga::LIGHT_RED),
             "LIGHT_MAGENTA" => Mode::SingleColor(cga::LIGHT_MAGENTA),
             "YELLOW" => Mode::SingleColor(cga::YELLOW),
-            path => match std::fs::read_to_string(path) {
+            possible_path => match std::fs::read_to_string(s) {
                 Ok(contents) => Mode::Palette {
                     palette: parse_palette(&contents)?,
                     name: Cow::Owned(s.to_string()),
@@ -226,7 +226,7 @@ fn test_parse() {
     assert!(GARBAGE.parse::<Mode>().is_err());
 
     let mut input = std::env::current_dir().unwrap();
-    input.push("cga.plt");
+    input.push("temp_cga.plt");
 
     dbg!(&input);
     let mut file = File::create(&input).unwrap();
@@ -261,6 +261,7 @@ fn test_parse() {
     } else {
         panic!("bad")
     }
+    std::fs::remove_file(input).unwrap();
 }
 /// create a quantization function from the specified palette, returning the pair
 /// `(nearest_neighbor, dist_from_neighbor)`
