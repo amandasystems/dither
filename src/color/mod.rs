@@ -226,6 +226,7 @@ fn test_parse() {
     assert!(GARBAGE.parse::<Mode>().is_err());
 
     let mut temppath = std::env::temp_dir();
+    dbg!(std::env::current_dir()).unwrap();
     temppath.push("cga.plt");
     let mut file = File::create(&temppath).unwrap();
     write!(
