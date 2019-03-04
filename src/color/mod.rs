@@ -211,19 +211,19 @@ fn test_parse() {
     use std::path::{Path, PathBuf};
     const GARBAGE: &str = "ASDASLKJAS";
 
-    let tt: Vec<(&str, Result<Mode, Error>)> = vec![
-        ("bw", Ok(Mode::BlackAndWhite)),
-        ("c", Ok(Mode::Color)),
-        ("color", Ok(Mode::Color)),
-        ("RED", Ok(Mode::SingleColor(cga::RED))),
-        ("blue", Ok(Mode::SingleColor(cga::BLUE))),
-        ("LigHT_CYAN", Ok(Mode::SingleColor(cga::LIGHT_CYAN))),
-        ("cga", Ok(Mode::CGA_PALETTE)),
-        (GARBAGE, Err(Error::UnknownOption(GARBAGE.to_string()))),
+    let tt: Vec<(&str, Mode)> = vec![
+        ("bw", Mode::BlackAndWhite),
+        ("c", Mode::Color),
+        ("color", Mode::Color),
+        ("RED", Mode::SingleColor(cga::RED)),
+        ("blue", Mode::SingleColor(cga::BLUE)),
+        ("LigHT_CYAN", Mode::SingleColor(cga::LIGHT_CYAN)),
+        ("cga", Mode::CGA_PALETTE),
     ];
     for (s, want) in tt {
-        assert_eq!(s.parse::<Mode>(), want);
+        assert_eq!(s.parse::<Mode>().unwrap(), want);
     }
+    assert!(GARBAGE.parse::<Mode>().is_err());
 
     let mut temppath = std::env::temp_dir();
     temppath.push("cga.plt");
