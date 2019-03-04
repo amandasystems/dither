@@ -207,6 +207,9 @@ impl std::fmt::Display for Error {
 #[test]
 fn test_parse() {
     use std::collections::HashSet;
+    use std::fs::File;
+    use std::io::prelude::*;
+    use std::path::{Path, PathBuf};
     const GARBAGE: &str = "ASDASLKJAS";
 
     let tt: Vec<(&str, Result<Mode, Error>)> = vec![
@@ -223,11 +226,35 @@ fn test_parse() {
         assert_eq!(s.parse::<Mode>(), want);
     }
 
+    let mut temppath = std::env::temp_dir();
+    temppath.push("cga.plt");
+    let mut file = File::create(&temppath).unwrap();
+    write!(
+        file,
+        "
+0x000000
+0x0000AA
+0x00AA00
+0x00AAAA
+0xAA00AA
+0xAA0000
+0xAA5500
+0xAAAAAA
+0x555555
+0x5555FF
+0x55FF55
+0x55FFFF
+0xFF5555
+0xFF55FF
+0xFFFF55
+0xFFFFFF"
+    )
+    .unwrap();
     let want_palette: HashSet<RGB<u8>> = cga::ALL.iter().cloned().collect();
     if let Mode::Palette {
         palette: got_palette,
         ..
-    } = "cga.plt".parse::<Mode>().unwrap()
+    } = temppath.to_string_lossy().parse::<Mode>().unwrap()
     {
         assert_eq!(want_palette, got_palette.iter().cloned().collect());
     } else {
