@@ -49,21 +49,10 @@ impl IOError {
     where
         ImageError: From<E>,
     {
-        match path.canonicalize() {
-            Err(_) => IOError {
-                err: ImageError::from(err),
-                path: to_lossy_owned(path),
-                comment: Some("NOTE: could not canonicalize path"),
-            },
-            Ok(abs_path) => IOError {
-                path: abs_path
-                    .file_stem()
-                    .unwrap_or_default()
-                    .to_string_lossy()
-                    .to_string(),
-                err: ImageError::from(err),
-                comment: None,
-            },
+        IOError {
+            path: to_lossy_owned(path),
+            err: ImageError::from(err),
+            comment: None,
         }
     }
 
@@ -89,12 +78,16 @@ impl std::fmt::Display for IOError {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Error::Input(err) => write!(f, "input: {}", err),
-            Error::Output(err) => write!(f, "output: {}", err),
-            Error::BadBitDepth(n) => write!(f, "bit depth must be between 1 and 7, but was {}", n),
-            Error::Color(err) => err.fmt(f),
+            Error::Input(err) => write!(f, "input error: loading image: {}", err),
+            Error::Output(err) => write!(f, "output error: output: {}", err),
+            Error::BadBitDepth(n) => write!(
+                f,
+                "configuration error: bit depth must be between 1 and 7, but was {}",
+                n
+            ),
+            Error::Color(err) => write!(f, "configuration error for: {}", err),
             Error::CustomPaletteIncompatibleWithDepth => f.write_str(
-                "the custom palette --color option is incompatible with the --depth option",
+                "error: the custom palette --color option is incompatible with the --depth option",
             ),
         }
     }

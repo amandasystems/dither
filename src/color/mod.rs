@@ -4,6 +4,7 @@ mod rgb;
 
 pub type Palette = [RGB<u8>];
 pub use self::rgb::RGB;
+
 use std::borrow::Cow;
 use std::fs;
 use std::io;
@@ -29,32 +30,36 @@ pub enum Mode {
     },
 }
 
-/// parse a palette, specified as 6-digit hexidecimal RGB values (w/ optional 0x prefix) separated by whitespace.
-/// don't forget to include at least two colors (probably including one of WHITE (0xffffff) or BLACK(0xffffff))
+/// parse a palette, specified as 6-digit hexidecimal RGB values (w/ optional 0x prefix) separated by newlines.
+/// lines consisting entirely of whitespace or starting with `//` are ignored.
+/// /// don't forget to include at least two colors (probably including one of WHITE (0xffffff) or BLACK(0xffffff))
 /// ```
 /// # use dither::color::parse_palette;
 /// # use dither::prelude::*;
-/// # use dither::color::cga;
-/// #    use std::fmt::Write;
-/// let mut input = String::new();
-/// let colors = vec![cga::BLACK, cga::BLUE, cga::GREEN];
-/// for color in colors.iter() {
-///        writeln!(input, "{:x}", color).unwrap();
-/// }
-/// assert_eq!(colors,  parse_palette(&input).unwrap().into_owned());
+/// # use std::collections::HashSet;
+/// let input = "
+/// // BLACK
+/// 0x000000
+/// // RED
+/// 0xFF0000
+/// // GREEN
+/// 00ff00
+/// ";
+/// let want_colors: HashSet<_> = vec![RGB(0, 0, 0), RGB(0xff, 0x00, 0x00), RGB(0x00, 0xff, 0x00)].into_iter().collect();
+/// assert_eq!(want_colors,  parse_palette(input).unwrap());
 /// ```
-pub fn parse_palette(s: &str) -> Result<Cow<'static, Palette>, Error> {
-    let mut palette: Vec<RGB<u8>> = s
-        .split_whitespace()
+pub fn parse_palette<T: std::iter::FromIterator<RGB<u8>>>(s: &str) -> Result<T, Error> {
+    let filtered: Vec<&str> = s
+        .lines()
         .map(str::trim)
-        .filter(|line| line.len() > 0)
-        .map(RGB::<u8>::from_str)
-        .collect::<Result<_, _>>()?;
-    palette.sort_by_key(|RGB(r, g, b)| (*r as u16 + *g as u16 + *b as u16, *r, *g, *b));
-    if palette.len() < 2 {
+        .filter(|line| {
+            !(line.is_empty() || line.starts_with("//") || line.chars().all(char::is_whitespace))
+        })
+        .collect();
+    if filtered.len() <= 2 {
         Err(Error::PaletteTooSmall)
     } else {
-        Ok(Cow::Owned(palette))
+        filtered.into_iter().map(RGB::<u8>::from_str).collect()
     }
 }
 impl Mode {
@@ -204,6 +209,7 @@ impl std::fmt::Display for Error {
 
 #[test]
 fn test_parse() {
+    use std::collections::HashSet;
     const GARBAGE: &str = "ASDASLKJAS";
 
     let tt: Vec<(&str, Result<Mode, Error>)> = vec![
@@ -215,45 +221,41 @@ fn test_parse() {
         ("LigHT_CYAN", Ok(Mode::SingleColor(cga::LIGHT_CYAN))),
         ("cga", Ok(Mode::CGA_PALETTE)),
         (GARBAGE, Err(Error::UnknownOption(GARBAGE.to_string()))),
-        // (
-        //     "0x1ffffff 0x123129",
-        //     Err(Error::BadPaletteColor(0x1_ff_ff_ff)),
-        // ),
     ];
     for (s, want) in tt {
         assert_eq!(s.parse::<Mode>(), want);
     }
 
-    let mut want_palette = cga::ALL.to_vec();
-    want_palette.sort_by_key(|RGB(r, g, b)| (*r as u16 + *g as u16 + *b as u16, *r, *g, *b));
-    dbg!(&want_palette);
+    let want_palette: HashSet<RGB<u8>> = cga::ALL.iter().cloned().collect();
     if let Mode::Palette {
         palette: got_palette,
         ..
     } = "cga.plt".parse::<Mode>().unwrap()
     {
-        assert_eq!(&want_palette[..], &got_palette[..]);
+        assert_eq!(want_palette, got_palette.iter().cloned().collect());
     } else {
         panic!("bad")
     }
 }
+/// create a quantization function from the specified palette, returning the pair
+/// `(nearest_neighbor, dist_from_neighbor)`
+pub fn quantize_palette(palette: &Palette) -> impl Fn(RGB<f64>) -> (RGB<f64>, RGB<f64>) {
+    // the naive implementation is faster than using a k-d tree for small palettes;
+    // see https://blog.krum.io/k-d-trees/
 
-pub fn quantize_palette(palette: &[RGB<u8>]) -> impl Fn(RGB<f64>) -> (RGB<f64>, RGB<f64>) {
     let palette = palette.to_vec();
     move |RGB(r0, g0, b0)| {
-        // dev note: this is naive implementation and the back of my mind says I can do better
         let mut min_abs_err = std::f64::INFINITY;
-        let mut closest: RGB<f64> = RGB::default();
-        let mut min_err: RGB<f64> = RGB::default();
+        let (mut nearest_neighbor, mut dist_from_neighbor) = (RGB(0., 0., 0.), RGB(0., 0., 0.));
 
         for RGB(r1, g1, b1) in palette.iter().cloned().map(RGB::<f64>::from) {
             let abs_err = f64::abs(r0 - r1) + f64::abs(g0 - g1) + f64::abs(b0 - b1);
             if abs_err < min_abs_err {
-                min_err = RGB(r0 - r1, g0 - g1, b0 - b1);
-                closest = RGB(r1, g1, b1);
+                dist_from_neighbor = RGB(r0 - r1, g0 - g1, b0 - b1);
+                nearest_neighbor = RGB(r1, g1, b1);
                 min_abs_err = abs_err;
             }
         }
-        (closest, min_err)
+        (nearest_neighbor, dist_from_neighbor)
     }
 }

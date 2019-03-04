@@ -13,7 +13,7 @@ fn main() {
 }
 
 pub fn _main(opts: &Opt) -> Result<()> {
-    let (input, output) = (opts.input_path()?, opts.output_path()?);
+    let (input, output) = (&opts.input, opts.output_path()?);
     if opts.verbose {
         eprintln!(
             concat!(
@@ -24,7 +24,7 @@ pub fn _main(opts: &Opt) -> Result<()> {
                 "BIT_DEPTH: {depth}\n\t",
                 "COLOR_MODE: {mode}"
             ),
-            input = input,
+            input = input.to_string_lossy(),
             output = output,
             dither = opts.ditherer,
             depth = opts.bit_depth,
@@ -35,11 +35,14 @@ pub fn _main(opts: &Opt) -> Result<()> {
         Img::<RGB<u8>>::load(&input)?.convert_with(|rgb| rgb.convert_with(f64::from));
 
     if opts.verbose {
-        eprintln!("image loaded from \"{}\".\ndithering...", input)
+        eprintln!(
+            "image loaded from \"{}\".\ndithering...",
+            input.to_string_lossy()
+        )
     }
     let quantize = dither::create_quantize_n_bits_func(opts.bit_depth)?;
 
-    let output_img = match &opts.color_mode { 
+    let output_img = match &opts.color_mode {
         color::Mode::Palette { .. } if opts.bit_depth > 1 => {
             return Err(Error::CustomPaletteIncompatibleWithDepth);
         }

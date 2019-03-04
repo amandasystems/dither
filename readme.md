@@ -23,7 +23,11 @@ dither INPUT [OUTPUT] [-v] [--dither] [--color] [--depth]
 example:
 
 ```bash
+# dither "bunny.ong", output to green_bunny.png, using the atkinson dithering algoirthm, and using two bits of depth for shades of GREEN, emitting debug info to stderr.
 dither bunny.png green_bunny.png --dither=atkinson --color=GREEN --depth=2 -v
+
+# dither "bunny.png", output to bunny_crayon.jpg, using the sierra 3 dithering algorithm, and loading it's color palette from crayon.plt
+dither bunny.png bunny_crayon.jpg --dither=sierra3 --color="crayon.plt"
 ```
 
 ## args
@@ -67,14 +71,21 @@ single-color mode. options are
 - YELLOW
 - WHITE
 
-#### "$FRONT $BACK"
+#### $FILENAME
 
-user specified 1bit user color palette, where the first is foreground in hexidecimal and the second is background. eg, "0xaabbcc 0x000000"
-
-#### cga
-
-sixteen-color CGA. ignores bit depth; casues error on bit depth > 1
-
+load a palette from file. palettes are specified as a list of two or more newline-separated 24-bit hexidecimals, with optional 0x prefix. see `crayon.plt` and `cga.plt` for examples.
+```
+// WHITE
+0xffffff
+// BLACK
+0x000000
+// RED
+0xff0000
+// GREEN
+0x00ff00
+// BLUE
+0x0000ff
+```
 ### `-d, --dither`
 
 The type of ditherer to use. Available options are
@@ -88,8 +99,8 @@ The type of ditherer to use. Available options are
 
 ### `-v, --verbose`
 
-Verbose debug output
+Verbose debug output to stderr
 
 ### `--depth`
 
-Default 1\. Bit depth should be an unsigned integer between 1 and 7\. The number of bits to compress each channel to.
+Default 1\. Bit depth should be an unsigned integer between 1 and 7\. The number of bits to compress each channel to. This option only works with the options `--color=$COLOR, --color=bw, --color=color`

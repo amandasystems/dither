@@ -1,6 +1,6 @@
 use std::ops::*;
 
-#[derive(Default, Debug, PartialEq, Eq, Clone)]
+#[derive(Default, Debug, PartialEq, Eq, Clone, Hash)]
 /// RGB represents a triplet of pixels (r, g, b).
 /// u8, i8, i16, and u16 are all one-word COPY types.
 pub struct RGB<N>(pub N, pub N, pub N);

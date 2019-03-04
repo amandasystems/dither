@@ -40,38 +40,16 @@ pub struct Opt {
 
     /// Color mode to use.
     /// Options are
-    /// -"bw" -> grayscale (black and white if bit-depth = 1)
+    /// - bw (default)
+    /// - color
+    /// - cga => load the cga palette. equivalent to "cga.plt".
     /// - $COLOR => single-color mode. options are
-    ///     - "BLUE"
-    ///     - "GREEN"
-    ///     - "CYAN"
-    ///     - "RED"
-    ///     - "MAGENTA"
-    ///     - "BROWN",
-    ///     - "LIGHT_GRAY"
-    ///     - "GRAY"
-    ///     - "LIGHT_BLUE",
-    ///     - "LIGHT_GREEN"
-    ///     - "LIGHT_CYAN",
-    ///     - "LIGHT_RED"
-    ///     - "LIGHT_MAGENTA"
-    ///     - "YELLOW"
-    ///     - "WHITE"
-    /// - ("0xYYYYYY 0xZZZZZZ") -> user specified 1bit user color palette; where the first is foreground in hexidecimal and the second is background.
-    /// - "cga" -> sixteen-color CGA. ignores bit depth; causes error on bit depth > 1
+    /// - $FILENAME" => load palette from file, listed as line-separated RGB values. see "cga.plt" and the readme for more information on palette files.
     #[structopt(short = "c", long = "color", default_value = "bw")]
     pub color_mode: color::Mode,
 }
 
 impl Opt {
-    /// the [canonical][std::fs::canonicalize] input path.
-    ///
-    pub fn input_path<'a>(&'a self) -> Result<String> {
-        match self.input.canonicalize() {
-            Err(err) => Err(Error::input(err, &self.input)),
-            Ok(abs_input) => Ok(abs_input.to_string_lossy().to_string()),
-        }
-    }
     /// the actual output path. if opts.output exists, this is that, otherwise, this is
     /// `"{base}_dithered_{dither}_{color}_{depth}.png"`,
     /// where base is the [canonicalized][std::fs::canonicalize] input path, stripped of it's extension.
@@ -86,17 +64,17 @@ impl Opt {
     /// let got_path = opt.output_path().unwrap();
     /// assert_eq!("bunny_dithered_floyd_bw_1.png", Path::file_name(got_path.as_ref().as_ref()).unwrap().to_string_lossy());
     /// ```
+    ///
+    pub fn input_path<'a>(&'a self) -> std::borrow::Cow<'a, str> {
+        self.input.to_string_lossy()
+    }
     pub fn output_path<'a>(&'a self) -> Result<std::borrow::Cow<'a, str>> {
         if let Some(path) = &self.output {
             return Ok(path.to_string_lossy());
         }
 
         let abs_path = match self.input.canonicalize() {
-            Err(err) => {
-                return Err(Error::Output(IOError::new(err, &self.input).add_comment(
-                    "could not create default output path from input path",
-                )));
-            }
+            Err(err) => return Err(Error::Input(IOError::new(err, &self.input))),
             Ok(abs_path) => abs_path,
         };
         let path = format!(
