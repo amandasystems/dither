@@ -173,7 +173,7 @@ impl<'a> FromStr for Mode {
             "LIGHT_RED" => Mode::SingleColor(cga::LIGHT_RED),
             "LIGHT_MAGENTA" => Mode::SingleColor(cga::LIGHT_MAGENTA),
             "YELLOW" => Mode::SingleColor(cga::YELLOW),
-            path if Path::is_file(path.as_ref()) => match std::fs::read_to_string(path) {
+            path => match std::fs::read_to_string(path) {
                 Ok(contents) => Mode::Palette {
                     palette: parse_palette(&contents)?,
                     name: Cow::Owned(s.to_string()),
@@ -185,7 +185,6 @@ impl<'a> FromStr for Mode {
                     });
                 }
             },
-            _ => return Err(Error::UnknownOption(s.to_string())),
         })
     }
 }
