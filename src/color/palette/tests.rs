@@ -42,7 +42,7 @@ fn parse() {
 0x55FF55
 0x55FFFF
 0xFF5555
-0xFF55FFc
+0xFF55FF
 0xFFFF55
 0xFFFFFF"
     )
@@ -51,7 +51,10 @@ fn parse() {
     if let Mode::Palette {
         palette: got_palette,
         ..
-    } = input.to_string_lossy().parse::<Mode>().unwrap()
+    } = input
+        .to_string_lossy()
+        .parse::<Mode>()
+        .expect("should have no trouble parsing")
     {
         assert_eq!(want_palette, got_palette.iter().cloned().collect());
     } else {
