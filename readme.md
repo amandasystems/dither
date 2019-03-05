@@ -2,11 +2,11 @@
 
 Inspired by: <http://www.tannerhelland.com/4660/dithering-eleven-algorithms-source-code/>
 - [crate](https://crates.io/crates/dither)
-- [documentation](https://docs.rs/dither/1.3.3/dither/)
+- [documentation](https://docs.rs/dither/1.3.4/dither/)
 - [repository](https://gitlab.com/efronlicht/dither)
 
 ## License: MIT
-
+The test photo (`"bunny.png"`) was obtained under the creative common license and is in the public domain.
 
 ## installation
 ```bash
@@ -38,37 +38,48 @@ dither INPUT [OUTPUT] [-v] [--dither="floyd"] [--color="bw"] [--depth="1"] [--he
 ![crayon](crayon.png)
 
 
-## args
+# Args 
 
-### `INPUT`
+## `INPUT`
 
 the path to an input image. known good image formats are `.png` and `.jpg`.
 
-### `OUTPUT`
+## `OUTPUT`
 
 the path to write the output. this will create or truncate the file at the existing location, if necessary. the image type will be inferred from the filename. currently, only `.png` and `.jpg` are supported.
 
-### `-c`, `--color`
+## `-c`, `--color`
 
 The color mode to use. Default is "bw" (black and white). 
-#### "color"
+Available options are
+- bw (default)
+- color
+- cga
+- crayon
+- $COLOR
+- $FILENAME
 
-(all colors with specified bit depth)
+### `--color=bw` (default)
 
-##### "bw"
+grayscale mode. dither to `--depth` bits; --depth=1 uses pure black and white, --depth=2 uses black, white, and two shades of gray, etc, etc.
 
-black and white mode (grayscale in higher birt depths)
+### `color=color`
 
-#### "crayon"
+use RGB channels with specified bit depth. i.e, `--color=color, --depth=2` uses two bits each for the red, green, and blue channels.
+
+
+
+### `--color=crayon`
 
 use the crayon color palette. see "crayon.plt" for details.
 
-### "cga"
+### `--color=cga`
 
 use the [cga](https://en.wikipedia.org/wiki/Color_Graphics_Adapter) color palette. see the wikipedia article or "cga.plt" for details.
-#### $COLOR
 
-single-color mode. options are
+### `--color=$COLOR`
+
+single-color mode. dither in black and white to the specified bit depth, then replace white with the given color, using black for the background.
 
 - BLUE
 - GREEN
@@ -80,45 +91,45 @@ single-color mode. options are
 - GRAY
 - LIGHT_BLUE
 - LIGHT_GREEN
-- LIGHT_CYAN "LIGHT_RED"
+- LIGHT_CYAN 
+- LIGHT_RED
 - LIGHT_MAGENTA
 - YELLOW
 - WHITE
 
-#### $FILENAME
+### `--color=$FILENAME`
 
 load a palette from file. palettes are specified as a list of two or more newline-separated 24-bit hexidecimals, with optional 0x prefix. see `crayon.plt` and `cga.plt` for examples.
-```
-// WHITE
-0xffffff
-// BLACK
-0x000000
-// RED
-0xff0000
-// GREEN
-0x00ff00
-// BLUE
-0x0000ff
-```
-### `-d, --dither`
+
+    // WHITE
+    0xffffff
+    // BLACK
+    0x000000
+    // RED
+    0xff0000
+    // GREEN
+    0x00ff00
+    // BLUE
+    0x0000ff
+
+## `-d, --dither`
 
 The type of ditherer to use. Available options are
 
-- `"floyd"`, `"steinberg"`, `"floydsteinberg"` _(default, floyd-steinberg dithering)_
+- `"floyd"`, `"steinberg"`, `"floydsteinberg"` (default)
 - `"atkinson"`,
 - `"stucki"`,
 - `"burkes"`,
-- `"jarvis"`, `"judice"`, `ninke"` _Jarvis-Judice-Ninke dithering_
-- `"sierra"`, `"sierra3"` _Sierra_ dithering
+- `"jarvis"`, `"judice"`, `ninke"`
+- `"sierra"`, `"sierra3"`
+
+See [the documentation](https://docs.rs/dither/1.3.4/dither/ditherer/index.html) or [Tanner Helland's article](http://www.tannerhelland.com/4660/dithering-eleven-algorithms-source-code) for technical details.
 
 ### `-v, --verbose`
 
-Verbose debug output to stderr
+Verbose debug output to stderr.
 
 ### `--depth`
 
-Default 1\. Bit depth should be an unsigned integer between 1 and 7\. The number of bits to compress each channel to. This option only works with the options `--color=$COLOR, --color=bw, --color=color`
-
-
-## examples
+The bit depth to compress each channel to. Should be an unsigned integer between 1 and 7 (default 1). Mutally exclusive with the `--color= $FILENAME`, `color==cga`, and `--color=crayon` options.
 
