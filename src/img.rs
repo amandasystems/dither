@@ -108,7 +108,7 @@ impl<N: From<u8>> Img<RGB<N>> {
     /// ```rust
     /// use dither::prelude::*;
     /// let img: Img<RGB<u8>> = Img::load("bunny.png").unwrap();
-    /// assert_eq!(img.size(), (620, 349));
+    /// assert_eq!(img.size(), (480, 320));
     /// ```
     pub fn load(path: impl AsRef<Path>) -> Result<Self> {
         match image::open(&path).and_then(|img| Ok(img.to_rgb())) {
