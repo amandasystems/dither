@@ -1,8 +1,8 @@
-# Dither 1.3.2
+# Dither 1.3.3
 
 Inspired by: <http://www.tannerhelland.com/4660/dithering-eleven-algorithms-source-code/>
 - [crate](https://crates.io/crates/dither)
-- [documentation](https://docs.rs/dither/1.3.1/dither/)
+- [documentation](https://docs.rs/dither/1.3.3/dither/)
 - [repository](https://gitlab.com/efronlicht/dither)
 
 ## License: MIT
@@ -27,6 +27,7 @@ dither INPUT [OUTPUT] [-v] [--dither="floyd"] [--color="bw"] [--depth="1"] [--he
 
 ## examples
 
+    # no-op
 ![bunny](bunny.png)
 
     dither bunny.png burkes.png --dither=burkes
@@ -49,8 +50,7 @@ the path to write the output. this will create or truncate the file at the exist
 
 ### `-c`, `--color`
 
-The color mode to use. Default is "bw" (black and white). Color mode to use.
-
+The color mode to use. Default is "bw" (black and white). 
 #### "color"
 
 (all colors with specified bit depth)
@@ -104,16 +104,10 @@ load a palette from file. palettes are specified as a list of two or more newlin
 
 The type of ditherer to use. Available options are
 
-- `"floyd"`, `"steinberg"`, `"floydsteinberg"` 
-_(default, floyd-steinberg dithering)_
-
+- `"floyd"`, `"steinberg"`, `"floydsteinberg"` _(default, floyd-steinberg dithering)_
 - `"atkinson"`,
-
 - `"stucki"`,
-![stucki](bunny_dithered_stucki_bw_1.png)
 - `"burkes"`,
-
-
 - `"jarvis"`, `"judice"`, `ninke"` _Jarvis-Judice-Ninke dithering_
 - `"sierra"`, `"sierra3"` _Sierra_ dithering
 

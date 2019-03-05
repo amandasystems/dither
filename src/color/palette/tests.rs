@@ -1,8 +1,8 @@
-use super::super::*;
+use super::cga;
+use crate::color::{Error, Mode, RGB};
 use std::collections::HashSet;
 use std::fs::File;
-use std::io::prelude::*;
-use std::path::{Path, PathBuf};
+use std::io::Write;
 #[test]
 fn parse() {
     const GARBAGE: &str = "ASDASLKJAS";
@@ -42,7 +42,7 @@ fn parse() {
 0x55FF55
 0x55FFFF
 0xFF5555
-0xFF55FF
+0xFF55FFc
 0xFFFF55
 0xFFFFFF"
     )

@@ -4,6 +4,7 @@ use super::{Error, RGB};
 pub mod cga;
 /// built-in CRAYON palette; equivalent to crayon.plt
 pub mod crayon;
+#[cfg(test)]
 mod tests;
 
 /// parse a palette, specified as 6-digit hexidecimal RGB values (w/ optional 0x prefix) separated by newlines.
