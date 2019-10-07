@@ -1,4 +1,4 @@
-# Dither 1.3.5
+# Dither 1.3.7
 
 Inspired by: <http://www.tannerhelland.com/4660/dithering-eleven-algorithms-source-code/>
 
