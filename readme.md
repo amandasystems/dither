@@ -1,9 +1,9 @@
-# Dither 1.3.7
+# Dither 1.3.10
 
 Inspired by: <http://www.tannerhelland.com/4660/dithering-eleven-algorithms-source-code/>
 
 * [crate](https://crates.io/crates/dither)
-* [documentation](https://docs.rs/dither/1.3.5/dither/)
+* [documentation](https://docs.rs/dither/1.3.10/dither/)
 * [repository](https://gitlab.com/efronlicht/dither)
 * [binaries](https://gitlab.com/efronlicht/dither-binaries)
 * [dockerfile](https://hub.docker.com/r/efronlicht/dither)
