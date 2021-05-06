@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 /// Command-line interface & arguments. See [clap].
 pub struct Opt {
     /// Provide verbose debug information. Default is false.
-    #[clap(short = "v", long = "verbose")]
+    #[clap(short = 'v', long = "verbose")]
     pub verbose: bool,
     /// Input file. Supported file types:
     /// `PNG`
@@ -37,7 +37,7 @@ pub struct Opt {
     /// - "jarvis"
     /// - "sierra3"
     ///
-    #[clap(short = "d", long = "dither", default_value = "floyd")]
+    #[clap(short = 'd', long = "dither", default_value = "floyd")]
     pub ditherer: Ditherer<'static>,
 
     /// Color mode to use.
@@ -48,7 +48,7 @@ pub struct Opt {
     /// - crayon => load the crayon palette. equivalent to "crayon.plt"
     /// - $COLOR => single-color mode. options are
     /// - $FILENAME" => load palette from file, listed as line-separated RGB values. see "cga.plt" and the readme for more information on palette files.
-    #[clap(short = "c", long = "color", default_value = "bw")]
+    #[clap(short = 'c', long = "color", default_value = "bw")]
     pub color_mode: color::Mode,
 }
 
