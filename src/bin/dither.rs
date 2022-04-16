@@ -1,5 +1,5 @@
 //! The actual runtime library.
-use clap::Clap;
+use clap::Parser;
 use color::palette;
 use dither::prelude::*;
 
