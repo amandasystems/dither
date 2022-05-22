@@ -9,6 +9,7 @@ pub mod color;
 pub mod ditherer;
 mod error;
 mod img;
+#[cfg(feature = "clap")]
 mod opts;
 pub mod prelude;
 pub use self::error::Error;

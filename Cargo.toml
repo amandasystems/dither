@@ -9,6 +9,11 @@ description = "A ditherer for static images with a variety of color palettes"
 repository= "https://gitlab.com/efronlicht/dither"
 readme = "readme.md"
 [dependencies]
-clap = { version = "3.1.18", features = ["derive"] }
+clap = { version = "3.1.18", features = ["derive"], optional = true }
 image = "0.23"
+
 [dev-dependencies]
+
+[features]
+default = ["clap"]
+

@@ -1,8 +1,16 @@
 //! The actual runtime library.
+
+#[cfg(feature = "clap")]
 use clap::Parser;
+#[cfg(feature = "clap")]
 use color::palette;
+#[cfg(feature = "clap")]
 use dither::prelude::*;
 
+#[cfg(not(feature = "clap"))]
+fn main() {}
+
+#[cfg(feature = "clap")]
 fn main() {
     let opts = Opt::parse();
     if let Err(err) = _main(&opts) {
@@ -14,6 +22,7 @@ fn main() {
     }
 }
 
+#[cfg(feature = "clap")]
 pub fn _main(opts: &Opt) -> Result<()> {
     let (input, output) = (&opts.input, opts.output_path()?);
     if opts.verbose {
