@@ -5,7 +5,7 @@ pub use super::*;
 pub use self::{
     color::{palette::Palette, RGB},
     ditherer::{Dither, Ditherer},
-    error::{Error, IOError, Result},
+    error::{Error, Result},
     img::Img,
     opts::Opt,
 };
@@ -15,6 +15,9 @@ pub use self::{
 pub use self::{
     color::{palette::Palette, RGB},
     ditherer::{Dither, Ditherer},
-    error::{Error, IOError, Result},
+    error::{Error, Result},
     img::Img,
 };
+
+#[cfg(feature = "image")]
+pub use self::error::IOError;

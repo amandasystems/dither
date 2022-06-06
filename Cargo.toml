@@ -10,10 +10,10 @@ repository= "https://gitlab.com/efronlicht/dither"
 readme = "readme.md"
 [dependencies]
 clap = { version = "3.1.18", features = ["derive"], optional = true }
-image = { version = "0.23", default-features = false, features = ["jpeg", "png"] }
+image = { version = "0.23", default-features = false, features = ["jpeg", "png"], optional = true }
 
 [dev-dependencies]
 
 [features]
-default = ["clap"]
+default = ["clap", "image"]
 
