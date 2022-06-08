@@ -1,13 +1,17 @@
 //! Error and result types for runtime error.
 use crate::prelude::*;
+#[cfg(feature = "image")]
 use image::ImageError;
+#[cfg(feature = "image")]
 use std::path::{Path, PathBuf};
 /// Handling of runtime errors in main.
 #[derive(Debug)]
 pub enum Error {
     /// An error saving an image from file.
+#[cfg(feature = "image")]
     Output(IOError),
     // An error loading an image.
+#[cfg(feature = "image")]
     Input(IOError),
     /// A bit depth that's not in the [range][std::ops::Range] `0..8`
     BadBitDepth(u8),
@@ -20,11 +24,13 @@ pub enum Error {
 /// Result type for [Error]
 pub type Result<T> = std::result::Result<T, Error>;
 
+#[cfg(feature = "image")]
 #[derive(Debug)]
 pub struct IOError {
     err: ImageError,
     path: PathBuf,
 }
+#[cfg(feature = "image")]
 impl Error {
     pub fn input(err: impl Into<ImageError>, path: impl AsRef<Path>) -> Self {
         Error::Input(IOError::new(err, path))
@@ -34,6 +40,7 @@ impl Error {
     }
 }
 
+#[cfg(feature = "image")]
 impl IOError {
     pub fn new(err: impl Into<ImageError>, path: impl AsRef<Path>) -> Self {
         IOError {
@@ -43,6 +50,7 @@ impl IOError {
     }
 }
 
+#[cfg(feature = "image")]
 impl std::fmt::Display for IOError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let IOError { path, err } = self;
@@ -53,7 +61,9 @@ impl std::fmt::Display for IOError {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
+#[cfg(feature = "image")]
             Error::Input(err) => write!(f, "input error: loading image: {}", err),
+#[cfg(feature = "image")]
             Error::Output(err) => write!(f, "output error: output: {}", err),
             Error::BadBitDepth(n) => write!(
                 f,

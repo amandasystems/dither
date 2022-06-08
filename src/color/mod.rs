@@ -146,3 +146,5 @@ impl PartialEq for Error {
 }
 
 impl Eq for Error {}
+
+impl std::error::Error for Error {}

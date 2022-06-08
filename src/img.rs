@@ -1,6 +1,9 @@
+#[cfg(feature = "image")]
 use super::RGB;
+#[cfg(feature = "image")]
 use super::{Error, Result};
 use std::ops::{Index, IndexMut};
+#[cfg(feature = "image")]
 use std::path::Path;
 /// Image as a flat buffer of pixels; accessible by (x, y) [Index]
 #[derive(Clone, Debug, PartialEq)]
@@ -103,6 +106,7 @@ impl<P> Img<P> {
     }
 }
 
+#[cfg(feature = "image")]
 impl<N: From<u8>> Img<RGB<N>> {
     /// load an image as an RGB<N> after converting it. See [image::open] and [image::DynamicImage::to_rgb]
     /// ```rust
@@ -111,7 +115,7 @@ impl<N: From<u8>> Img<RGB<N>> {
     /// assert_eq!(img.size(), (480, 320));
     /// ```
     pub fn load(path: impl AsRef<Path>) -> Result<Self> {
-        match image::open(&path).and_then(|img| Ok(img.to_rgb())) {
+        match image::open(&path).and_then(|img| Ok(img.to_rgb8())) {
             Err(err) => Err(Error::input(err, path.as_ref())),
             Ok(img) => Ok(Img {
                 buf: img.pixels().map(|p| RGB::from(p.0)).collect(),
@@ -121,6 +125,7 @@ impl<N: From<u8>> Img<RGB<N>> {
     }
 }
 
+#[cfg(feature = "image")]
 impl Img<RGB<u8>> {
     /// save an image as a `.png` or `.jpg` to the path. the path extension determines the image type.
     /// See [image::ImageBuffer::save]

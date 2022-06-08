@@ -1,8 +1,8 @@
 use crate::prelude::*;
-use clap::Clap;
+use clap::Parser;
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
-#[derive(Debug, Clap, Default, PartialEq, Clone)]
+#[derive(Debug, Parser, Default, PartialEq, Clone)]
 #[clap(name = "dither")]
 #[clap(version = "1.3.8", author = "Efron Licht (efron.python@gmail.com)")]
 /// Command-line interface & arguments. See [clap].
