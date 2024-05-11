@@ -1,3 +1,7 @@
+Note: this version is a fork of Efron Licht's version, which no longer compiles. Efron, if you are reading this, you are absolutely welcome to backport whatever you want from here.
+
+I may or may not try to become the official maintainer of the dither cargo package in the future.
+
 # Dither 1.3.10
 
 Inspired by: <http://www.tannerhelland.com/4660/dithering-eleven-algorithms-source-code/>
