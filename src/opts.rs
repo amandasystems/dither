@@ -1,8 +1,10 @@
 use crate::prelude::*;
-use clap::Clap;
+use clap::Parser;
 use std::borrow::Cow;
+use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
-#[derive(Debug, Clap, Default, PartialEq, Clone)]
+use std::str::FromStr;
+#[derive(Debug, Parser, Default, PartialEq, Clone)]
 #[clap(name = "dither")]
 #[clap(version = "1.3.8", author = "Efron Licht (efron.python@gmail.com)")]
 /// Command-line interface & arguments. See [clap].
@@ -48,8 +50,12 @@ pub struct Opt {
     /// - crayon => load the crayon palette. equivalent to "crayon.plt"
     /// - $COLOR => single-color mode. options are
     /// - $FILENAME" => load palette from file, listed as line-separated RGB values. see "cga.plt" and the readme for more information on palette files.
-    #[clap(short = 'c', long = "color", default_value = "bw")]
+    #[clap(short = 'c', long = "color", default_value = "bw", parse(try_from_str=color_mode_from_string))]
     pub color_mode: color::Mode,
+}
+
+fn color_mode_from_string(s: &str) -> std::result::Result<color::Mode, String> {
+    color::Mode::from_str(s).map_err(|e| e.to_string())
 }
 
 impl Opt {
