@@ -1,7 +1,6 @@
-use crate::prelude::*;
 use clap::Parser;
+use libdither::prelude::*;
 use std::borrow::Cow;
-use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 #[derive(Debug, Parser, Default, PartialEq, Clone)]

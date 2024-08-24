@@ -1,7 +1,9 @@
 //! The actual runtime library.
 use clap::Parser;
 use color::palette;
-use dither::prelude::*;
+mod opts;
+use libdither::prelude::*;
+use opts::Opt;
 
 fn main() {
     let opts = Opt::parse();
@@ -39,7 +41,7 @@ pub fn _main(opts: &Opt) -> Result<()> {
     if opts.verbose {
         eprintln!("image loaded from \"{}\".\ndithering...", input.display())
     }
-    let quantize = dither::create_quantize_n_bits_func(opts.bit_depth)?;
+    let quantize = libdither::create_quantize_n_bits_func(opts.bit_depth)?;
 
     let output_img = match &opts.color_mode {
         color::Mode::Palette { .. } if opts.bit_depth > 1 => {
